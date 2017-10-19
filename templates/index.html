@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Home page{% endblock %}
+
+{% block content %}
+    <h1>Menu</h1>
+    <ul>
+        <li><a href="{% url 'main:hhuserlist' %}">Users to evaluate</a></li>
+    </ul>
+{% endblock %}

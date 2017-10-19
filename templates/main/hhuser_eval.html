@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load main_extras %}
+
+{% block title %}User {{ code }}{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}" />
+{% endblock %}
+
+{% block content %}
+    {% if info_msg %}
+        <p>{{ info_msg }}</p>
+    {% endif %}
+
+    {% if has_recs %}
+        <h2>{{ code }}</h2>
+        <div class="left">
+            <h3>User description:</h3>
+            <ul>
+            {% for tag, val in descr.items|dictsortreversed:1 %}
+                <li>{{ tag }}: {{ val|float_to_percent }}</li>
+            {% endfor %}
+            </ul>
+
+            <h3>User cluster description:</h3>
+            <ul>
+            {% for tag, val in cluster_descr.items|dictsortreversed:1 %}
+                <li>{{ tag }}: {{ val|float_to_percent }}</li>
+            {% endfor %}
+            </ul>
+
+            <h3>Summary of previous bookings:</h3>
+            <ul>
+            {% for tag, val in bookings_summary.items|dictsortreversed:1 %}
+                <li>{{ tag }}: {{ val|float_to_percent }}</li>
+            {% endfor %}
+            </ul>
+
+            {% if last5_items %}
+                <h3>Last booked items:</h3>
+                {% include "main/items_container.html" with items=last5_items %}
+            {% endif %}
+        </div>
+        <div class="right">
+            <h3>Recommendations:</h3>
+        </div>
+    {% endif %}
+{% endblock %}
