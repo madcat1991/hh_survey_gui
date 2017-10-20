@@ -16,7 +16,7 @@ class HHUser(models.Model):
 
 class ItemClusterReview(models.Model):
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
-    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, related_name='review')
+    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE)
     item_cluster_id = models.IntegerField(verbose_name="item cluster id")
     review_text = models.TextField(verbose_name="Review")
     dt = models.DateTimeField(auto_now=True)
@@ -39,6 +39,15 @@ class Booking(models.Model):
     hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, related_name='booking')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     dt = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-dt']
+
+
+class UserReviewedHHUser(models.Model):
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
+    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, related_name='review')
+    dt = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-dt']
