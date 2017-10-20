@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
 {% endblock %}
 
+{% block header %}
+    <a href="{% url "index" %}">&laquo To the index</a>
+{% endblock %}
+
 {% block content %}
     <h1>Users to evaluate</h1>
 

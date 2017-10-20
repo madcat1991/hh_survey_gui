@@ -8,9 +8,12 @@
     <script>
         $(document).ready(function() {
             $('.info_msg').fadeOut(3000, function(){ $(this).remove();});
-            $('.info_msg').fadeOut(3000, function(){ $(this).remove();});
         });
     </script>
+{% endblock %}
+
+{% block header %}
+    <a href="{% url "main:hhuserlist" %}">&laquo To the list of users</a>
 {% endblock %}
 
 {% block content %}
