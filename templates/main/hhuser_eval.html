@@ -1,49 +1,67 @@
 {% extends 'base.html' %}
 
 {% load static %}
-{% load main_extras %}
 
 {% block title %}User {{ code }}{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'main/css/main.css' %}" />
+    <script>
+        $(document).ready(function() {
+            $('.info_msg').fadeOut(3000, function(){ $(this).remove();});
+            $('.info_msg').fadeOut(3000, function(){ $(this).remove();});
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
     {% if info_msg %}
-        <p>{{ info_msg }}</p>
+        <div class="info_msg">{{ info_msg }}</div>
     {% endif %}
 
     {% if has_recs %}
         <h2>{{ code }}</h2>
         <div class="left">
-            <h3>User description:</h3>
-            <ul>
-            {% for tag, val in descr.items|dictsortreversed:1 %}
-                <li>{{ tag }}: {{ val|float_to_percent }}</li>
-            {% endfor %}
-            </ul>
+            <h2>User description:</h2>
+            {% include "main/features_container.html" with features=descr %}
 
-            <h3>User cluster description:</h3>
-            <ul>
-            {% for tag, val in cluster_descr.items|dictsortreversed:1 %}
-                <li>{{ tag }}: {{ val|float_to_percent }}</li>
-            {% endfor %}
-            </ul>
+            <h2>User cluster description:</h2>
+            {% include "main/features_container.html" with features=cluster_descr %}
 
-            <h3>Summary of previous bookings:</h3>
-            <ul>
-            {% for tag, val in bookings_summary.items|dictsortreversed:1 %}
-                <li>{{ tag }}: {{ val|float_to_percent }}</li>
-            {% endfor %}
-            </ul>
+            <h2>Summary of previous bookings:</h2>
+            {% include "main/features_container.html" with features=bookings_summary %}
 
             {% if last5_items %}
-                <h3>Last booked items:</h3>
+                <h2>Last booked items:</h2>
                 {% include "main/items_container.html" with items=last5_items %}
             {% endif %}
         </div>
         <div class="right">
-            <h3>Recommendations:</h3>
+        {% if clusters %}
+            <h2>Recommendations:</h2>
+            <form id="recs_form" action="{% url 'main:hhusereval' code %}" method="post">
+            {% csrf_token %}
+                <div id="submit_btn_container">
+                    <input type="submit" value="Finish and submit review"/>
+                </div>
+                {% for cluster in clusters %}
+                    <div class="cluster">
+                        <h3>Cluster #{{ cluster.cluster_id }}</h3>
+                        <span>Features</span>
+                        {% include "main/features_container.html" with features=cluster.features %}
+                        <span>Properties</span>
+                        {% include "main/items_container.html" with items=cluster.items %}
+                        <div class="review">
+                            <label for="review_cluster_{{ cluster.cluster_id }}">Review message</label>
+                            <textarea id="review_cluster_{{ cluster.cluster_id }}" name="review_cluster_{{ cluster.cluster_id }}" rows="4">{{ cluster.review }}</textarea>
+                        </div>
+                    </div>
+                {% endfor %}
+            </form>
+        {% else %}
+            <h2>No recommendations</h2>
+        {% endif %}
         </div>
+    {% else %}
+        <h2>No information about the {{ code }} user</h2>
     {% endif %}
 {% endblock %}

@@ -3,11 +3,11 @@
 <div class="items_container">
 {% for item in items %}
     <div class="item">
-        <img src="{{ item.item__image_uri|hh_image_uri_to_url }}">
-        {% if item.item__uri %}
-            <a href="{{ item.item__uri|hh_uri_to_url }}">{{ item.item__name }}</a>
+        <img src="{{ item.image_uri|hh_image_uri_to_url }}">
+        {% if item.uri %}
+            <a href="{{ item.uri|hh_uri_to_url }}" target="_blank">{{ item.name }}</a>
         {% else %}
-            {{ item.item }}
+            {{ item.name }}
         {% endif %}
     </div>
 {% endfor %}

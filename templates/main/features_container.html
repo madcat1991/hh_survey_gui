@@ -1,0 +1,7 @@
+{% load main_extras %}
+
+<ul>
+{% for tag, val in features.items|dictsortreversed:1 %}
+    <li>{{ tag }}: {{ val|float_to_percent }}</li>
+{% endfor %}
+</ul>
