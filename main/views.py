@@ -9,7 +9,7 @@ from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
 from main.filters import HHUserFilter
-from main.models import HHUser, Booking, Item, ItemClusterReview
+from main.models import HHUser, Booking, Item, ItemClusterReview, UserReviewedHHUser
 from main.table import HHUserTable
 
 
@@ -134,6 +134,10 @@ def eval_hh_user_view(request, code):
                     elif review_obj.review_text != review_text:
                         review_obj.review_text = review_text
                         review_obj.save()
+
+            # save the fact of review
+            fact_obj, _ = UserReviewedHHUser.objects.get_or_create(reviewer=request.user, hh_user_id=code)
+            fact_obj.save()
 
         for cluster in cntx["clusters"]:
             cl_id = cluster["cluster_id"]
