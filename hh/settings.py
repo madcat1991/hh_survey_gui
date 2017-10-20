@@ -155,6 +155,7 @@ LOGOUT_REDIRECT_URL = '/'
 API_DATA_DIR = "/Users/tural/PyProjects/clustered_cars/data/"
 USER_CLUSTERS_JSON_PATH = os.path.join(API_DATA_DIR, "clustered/user.txt")
 BOOKING_CSV_PATH = os.path.join(API_DATA_DIR, "cleaned/booking.csv")
+ITEM_CSV_PATH = os.path.join(API_DATA_DIR, "cleaned/property.csv")
 
 # API
 API_URL = "http://46.18.25.101/cluster/recs/"
