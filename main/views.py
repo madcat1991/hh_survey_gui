@@ -9,7 +9,8 @@ from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
 from main.filters import HHUserFilter
-from main.models import HHUser, Booking, Item, ItemClusterReview, UserReviewedHHUser
+from main.forms import HHUserRecsReviewForm
+from main.models import HHUser, Booking, Item, HHUserRecsReview
 from main.table import HHUserTable
 
 
