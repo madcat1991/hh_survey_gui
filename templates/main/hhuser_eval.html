@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load main_extras %}
 
 {% block title %}User {{ code }}{% endblock %}
 {% block head %}
@@ -17,48 +18,99 @@
 {% endblock %}
 
 {% block content %}
-    {% if info_msg %}
-        <div class="info_msg">{{ info_msg }}</div>
+    {% if info_message %}
+        <div class="info_msg">{{ info_message }}</div>
     {% endif %}
+
+    {% for err_msg in error_messages %}
+        <div class="error_msg">{{ err_msg }}</div>
+    {% endfor %}
 
     {% if has_recs %}
         <h2>{{ code }}</h2>
         <div class="left">
-            <h2>User description:</h2>
-            {% include "main/features_container.html" with features=descr %}
+        {% if last5_items %}
+            <h2>Last booked items:</h2>
 
-            <h2>User cluster description:</h2>
-            {% include "main/features_container.html" with features=cluster_descr %}
-
-            <h2>Summary of previous bookings:</h2>
-            {% include "main/features_container.html" with features=bookings_summary %}
-
-            {% if last5_items %}
-                <h2>Last booked items:</h2>
-                {% include "main/items_container.html" with items=last5_items %}
-            {% endif %}
+            <div class="items_container">
+            {% for item in last5_items %}
+                <div class="item">
+                    <img src="{{ item.image_uri|hh_image_uri_to_url }}">
+                    {% if item.uri %}
+                        <a href="{{ item.uri|hh_uri_to_url }}" target="_blank">{{ item.name }}</a>
+                    {% else %}
+                        {{ item.name }}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
         </div>
         <div class="right">
         {% if clusters %}
             <h2>Recommendations:</h2>
             <form id="recs_form" action="{% url 'main:hhusereval' code %}" method="post">
             {% csrf_token %}
+
+            {% for cl in clusters %}
+                <div class="cluster">
+                    <h3>Cluster #{{ cl.id }}</h3>
+
+                    <div>Which property below do you think is the most relevant to this user? Click on its image.</div>
+
+                    <div class="items_container">
+                    {% for item in cl.items %}
+                        <div class="item">
+                            <label>
+                                <input type="radio" name="cluster_{{ cl.id }}_items" value="item_{{ item.id }}" {% if item.selected %}checked{% endif %}/>
+                                <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
+                            </label>
+
+                            {% if item.obj.uri %}
+                                <a href="{{ item.obj.uri|hh_uri_to_url }}" target="_blank">{{ item.obj.name }}</a>
+                            {% else %}
+                                {{ item.obj.name }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    </div>
+
+                    <br>
+
+                    <div class="hh_user_cluster_review">
+                        <div class="label">Evaluate the selected property</div>
+                        <ul class="radio">
+
+                        {% for id_, text_ in cluster_review_answers %}
+                            <li>
+                                <input id="cluster_{{ cl.id }}_review_{{ id_ }}" type="radio" name="cluster_{{ cl.id }}_reviews" value="{{ id_ }}" required {% if id_ == cl.answer %}checked{% endif %}/>
+                                <label for="cluster_{{ cl.id }}_review_{{ id_ }}">{{ text_ }}</label>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+
+                <br>
+
+                <div class="hh_user_review">
+                    <div class="label">Evaluate the selected properties</div>
+                    <ul class="radio">
+                    {% for id_, text_ in review_answers %}
+                        <li>
+                            <input id="user_review_{{ id_ }}" type="radio" name="user_review" value="{{ id_ }}" required {% if id_ == user_answer %}checked{% endif %}/>
+                            <label for="user_review_{{ id_ }}">{{ text_ }}</label>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+
+                <br>
+
                 <div id="submit_btn_container">
                     <input type="submit" value="Finish and submit review"/>
                 </div>
-                {% for cluster in clusters %}
-                    <div class="cluster">
-                        <h3>Cluster #{{ cluster.cluster_id }}</h3>
-                        <span>Features</span>
-                        {% include "main/features_container.html" with features=cluster.features %}
-                        <span>Properties</span>
-                        {% include "main/items_container.html" with items=cluster.items %}
-                        <div class="review">
-                            <label for="review_cluster_{{ cluster.cluster_id }}">Review message</label>
-                            <textarea id="review_cluster_{{ cluster.cluster_id }}" name="review_cluster_{{ cluster.cluster_id }}" rows="4">{{ cluster.review }}</textarea>
-                        </div>
-                    </div>
-                {% endfor %}
             </form>
         {% else %}
             <h2>No recommendations</h2>

@@ -9,8 +9,7 @@ from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
 from main.filters import HHUserFilter
-from main.forms import HHUserRecsReviewForm
-from main.models import HHUser, Booking, Item, HHUserRecsReview
+from main.models import HHUser, Booking, Item, HHUserRecsReview, RecsClusterReview
 from main.table import HHUserTable
 
 
@@ -75,25 +74,31 @@ def get_recs_cntx(code):
     cntx = {}
     if data:
         cntx["has_recs"] = True
-        cntx["descr"] = data["user"]
-        cntx["bookings_summary"] = data["prev_bookings_summary"]
 
-        # user cluster info
+        # user part
         cl_id, cl_descr = list(data["user_cluster"].items())[0]
         cntx["cluster_id"] = cl_id
         cntx["cluster_descr"] = cl_descr
+        cntx["descr"] = data["user"]
+        cntx["bookings_summary"] = data["prev_bookings_summary"]
 
+        # collecting all the data about items from different clusters
         recommended_items = set([prop["propcode"] for rec in data["recs"] for prop in rec["properties"]])
         recommended_items = {obj.pk: obj for obj in Item.objects.filter(pk__in=recommended_items)}
 
+        # preparing output data describing clusters
         cntx["clusters"] = []
         for rec in data["recs"]:
-            cluster_data = {
-                "cluster_id": rec["bg_id"],
+            cluster_items = [
+                {"id": prop["propcode"], "obj": recommended_items[prop["propcode"]]}
+                for prop in rec["properties"]
+            ]
+
+            cntx["clusters"].append({
+                "id": rec["bg_id"],
                 "features": rec["features"],
-                "items": [recommended_items[prop["propcode"]] for prop in rec["properties"]]
-            }
-            cntx["clusters"].append(cluster_data)
+                "items": cluster_items
+            })
     else:
         cntx["has_recs"] = False
     return cntx
@@ -101,47 +106,97 @@ def get_recs_cntx(code):
 
 @login_required
 def eval_hh_user_view(request, code):
-    reviews_by_cl_ids = {
-        obj.item_cluster_id: obj
-        for obj in ItemClusterReview.objects.filter(reviewer=request.user, hh_user__pk=code)
-    }
-
+    # WARNING!!! we assume that recommendations doesn't change over time!!!
     cntx = get_recs_cntx(code)
     cntx["code"] = code
     cntx["last5_items"] = get_items_booked_by_user(code, TOP_ITEMS)
+    cntx["cluster_review_answers"] = RecsClusterReview.REVIEW_ANSWERS
+    cntx["review_answers"] = HHUserRecsReview.REVIEW_ANSWERS
 
+    error_messages = []
     if cntx["has_recs"]:
         if request.method == 'POST':
-            cntx["info_msg"] = "Reviews for HH user %s have been updated" % code
-            cluster_ids = [cluster["cluster_id"] for cluster in cntx["clusters"]]
-            for cl_id in cluster_ids:
-                key = 'review_cluster_%s' % cl_id
-                review_text = request.POST.get(key, "").strip()
+            # user review answer
+            user_answer = request.POST.get("user_review")
+            if user_answer:
+                cntx["user_answer"] = user_answer
+            else:
+                error_messages.append(
+                    "Fill the evaluation of the selected for the user items"
+                )
 
-                review_obj = reviews_by_cl_ids.get(cl_id)
-                if review_obj is None and review_text:
-                    review_obj = ItemClusterReview(
-                        reviewer=request.user,
-                        item_cluster_id=cl_id,
-                        review_text=review_text
+            # cluster evaluation
+            cluster_review_data = []
+            for cl_pos, cl_obj in enumerate(cntx["clusters"]):
+                cl_id = cl_obj["id"]
+
+                # cluster review
+                cl_answer = request.POST.get("cluster_%s_reviews" % cl_id)
+                if cl_answer:
+                    cl_obj["answer"] = cl_answer
+                else:
+                    error_messages.append(
+                        "Fill the evaluation of the item selected for cluster %s" % cl_id
                     )
-                    review_obj.hh_user_id = code
-                    review_obj.save()
-                    reviews_by_cl_ids[cl_id] = review_obj
-                elif review_obj is not None:
-                    if not review_text:
-                        review_obj.delete()
-                        reviews_by_cl_ids.pop(cl_id)
-                    elif review_obj.review_text != review_text:
-                        review_obj.review_text = review_text
-                        review_obj.save()
 
-            # save the fact of review
-            fact_obj, _ = UserReviewedHHUser.objects.get_or_create(reviewer=request.user, hh_user_id=code)
-            fact_obj.save()
+                # selected item
+                item_id = item_pos = None
+                selected_item = request.POST.get("cluster_%s_items" % cl_id)
+                if selected_item:
+                    selected_item = selected_item.replace("item_", "")
+                    for i_pos, i_obj in enumerate(cl_obj["items"]):
+                        if i_obj["id"] == selected_item:
+                            item_id, item_pos = selected_item, i_pos
+                            i_obj["selected"] = True
+                            break
+                    else:
+                        error_messages.append(
+                            "Select existing item for cluster %s" % cl_id
+                        )
+                else:
+                    error_messages.append(
+                        "Select item for cluster %s" % cl_id
+                    )
 
-        for cluster in cntx["clusters"]:
-            cl_id = cluster["cluster_id"]
-            cluster["review"] = reviews_by_cl_ids[cl_id].review_text if cl_id in reviews_by_cl_ids else ""
+                # data to create/update cluster review objects
+                cluster_review_data.append(
+                    (cl_id, cl_pos, {"item_id": item_id, "item_pos": item_pos, "answer": cl_answer})
+                )
 
+            if not error_messages:
+                r_obj, is_created = HHUserRecsReview.objects.update_or_create(
+                    {"answer": user_answer}, reviewer=request.user, hh_user_id=code
+                )
+
+                for cl_id, cl_pos, cl_dict in cluster_review_data:
+                    RecsClusterReview.objects.update_or_create(
+                        cl_dict, review=r_obj, cluster_id=cl_id, cluster_pos=cl_pos
+                    )
+
+                cntx["info_message"] = "The review has been successfully stored"
+        else:
+            try:
+                recs_review_obj = HHUserRecsReview.objects.get(reviewer=request.user, hh_user__pk=code)
+            except HHUserRecsReview.DoesNotExist:
+                recs_review_obj = None
+
+            if recs_review_obj is not None:
+                cntx["user_answer"] = recs_review_obj.answer
+
+                if recs_review_obj.recs_type == HHUserRecsReview.RT_CLUSTER_BASED:
+                    cluster_reviews = {
+                        obj.cluster_id: (obj.item_id, obj.answer)
+                        for obj in recs_review_obj.cluster_review.all()
+                    }
+
+                    # populating selections within a cluster
+                    for cl_obj in cntx["clusters"]:
+                        item_id, answer = cluster_reviews[cl_obj["id"]]
+                        cl_obj["answer"] = answer
+                        for i_obj in cl_obj["items"]:
+                            if item_id == i_obj["id"]:
+                                i_obj["selected"] = True
+                                break
+
+    cntx["error_messages"] = error_messages
     return render(request, "main/hhuser_eval.html", context=cntx)

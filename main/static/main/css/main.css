@@ -34,13 +34,6 @@
     width: 98%;
 }
 
-.cluster ul{
-    columns: 2;
-    -webkit-columns: 2;
-    -moz-columns: 2;
-    margin-top: 0;
-}
-
 .cluster span{
     font-weight: bold;
 }
@@ -55,10 +48,6 @@ div.cluster{
     margin: 7px 0;
 }
 
-#submit_btn_container{
-    text-align: right;
-}
-
 div.info_msg{
     border: solid thin rgba(0, 114, 255, 0.5);
     border-radius: 10px;
@@ -67,3 +56,44 @@ div.info_msg{
     margin: 3px;
     font-size: 15pt;
 }
+
+div.error_msg{
+    border: solid thin rgba(255, 0, 0, 0.5);
+    border-radius: 10px;
+    background: rgba(255, 0, 0, 0.3);
+    padding: 7px;
+    margin: 3px;
+    font-size: 15pt;
+}
+
+div.hh_user_review div.label {
+    padding: 0;
+    font-weight: bold;
+}
+
+ul.radio  {
+    padding: 0;
+    margin: 5px 0 0 10px;
+    list-style: none;
+}
+
+label > input{ /* HIDE RADIO */
+    visibility: hidden; /* Makes input not-clickable */
+    position: absolute; /* Remove input from document flow */
+}
+
+label > input + img{ /* IMAGE STYLES */
+    cursor:pointer;
+    border:2px solid transparent;
+}
+
+label > input:checked + img{ /* (RADIO CHECKED) IMAGE STYLES */
+    border:2px solid rgba(255, 0, 0, 0.71);
+}
+
+/*.cluster ul{*/
+    /*columns: 2;*/
+    /*-webkit-columns: 2;*/
+    /*-moz-columns: 2;*/
+    /*margin-top: 0;*/
+/*}*/

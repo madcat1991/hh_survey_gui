@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -20,6 +21,9 @@ class Item(models.Model):
     image_uri = models.CharField(max_length=200, null=True)
     name = models.CharField(max_length=200, null=True)
 
+    def __str__(self):
+        return self.code
+
     class Meta:
         ordering = ['code']
 
@@ -35,7 +39,7 @@ class Booking(models.Model):
 
 class HHUserRecsReview(models.Model):
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
-    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE)
+    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, related_name='review')
 
     RA_1 = "1"
     RA_2 = "2"
@@ -71,21 +75,25 @@ class HHUserRecsReview(models.Model):
     dt = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s about '%s' recs of %s: %s" % \
+        return 'User "%s" about %s recs of HH user "%s": %s' % \
                (self.reviewer, self.recs_type, self.hh_user, self.answer)
 
+    class Meta:
+        verbose_name = "HH user recommendations review"
+        ordering = ['-dt']
 
-class RecsItemReview(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    item_pos = models.IntegerField(
-        verbose_name="Item position", validators=[MinValueValidator(0)]
-    )
 
+class RecsClusterReview(models.Model):
     cluster_id = models.IntegerField(
         verbose_name="Item cluster id", validators=[MinValueValidator(0)], null=True,
     )
     cluster_pos = models.IntegerField(
         verbose_name="Cluster position", validators=[MinValueValidator(0)], null=True,
+    )
+
+    item = models.ForeignKey(Item)
+    item_pos = models.IntegerField(
+        verbose_name="Item position", validators=[MinValueValidator(0)]
     )
 
     RA_1 = "1"
@@ -106,5 +114,9 @@ class RecsItemReview(models.Model):
         blank=False,
     )
 
-    user_review = models.ForeignKey(HHUserRecsReview, on_delete=models.CASCADE)
+    review = models.ForeignKey(HHUserRecsReview, on_delete=models.CASCADE, related_name="cluster_review")
     dt = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Recommended cluster review"
+        ordering = ['-dt']
