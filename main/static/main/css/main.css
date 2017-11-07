@@ -1,10 +1,12 @@
 .left{
-    width: 35%;
+    width: 30%;
     float: left;
     height: 100%
 }
 
 .right{
+    border-left: double #DDD;
+    padding-left: 10px;
     width: 65%;
     float: left;
     height: 100%
@@ -43,9 +45,12 @@
 }
 
 div.cluster{
-    border: solid thin darkgrey;
+    border: solid thin #DDD;
     padding: 10px;
     margin: 7px 0;
+    border-radius: 18px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
 }
 
 div.info_msg{
@@ -101,6 +106,19 @@ button.accordion {
     font-size: 14px;
     font-weight: normal;
     font-family: "Lucida Grande", Verdana, Helvetica, Arial, sans-serif;
+}
+
+#submit_btn_container input{
+    background-color: #EDF3FE;
+    padding: 10px;
+    border: solid 1px #DDD;
+    border-radius: 18px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    font-size: 14px;
+    font-weight: normal;
+    font-family: "Lucida Grande", Verdana, Helvetica, Arial, sans-serif;
+    margin: 0 0 20px;
 }
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
