@@ -55,12 +55,15 @@ def get_items_booked_by_user(code, n_latest):
         .annotate(max_dt=Max('dt')) \
         .order_by('-max_dt')[:n_latest]
     return [
-        Item(
-            code=item["item"],
-            name=item["item__name"],
-            uri=item["item__uri"],
-            image_uri=item["item__image_uri"]
-        )
+        {
+            "id": item["item"],
+            "obj": Item(
+                code=item["item"],
+                name=item["item__name"],
+                uri=item["item__uri"],
+                image_uri=item["item__image_uri"]
+            )
+        }
         for item in items
     ]
 
