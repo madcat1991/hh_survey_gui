@@ -158,7 +158,8 @@ BOOKING_CSV_PATH = os.path.join(API_DATA_DIR, "cleaned/booking.csv")
 ITEM_CSV_PATH = os.path.join(API_DATA_DIR, "cleaned/property.csv")
 
 # API
-API_URL = "http://46.18.25.101/cluster/recs/"
+API_CLUSTER_RECS_URL = "http://46.18.25.101/cluster/recs/"
+API_ITEM_RECS_URL = "http://46.18.25.101/item/recs/"
 HH_URL = "https://www.helpfulholidays.co.uk/"
 HH_IMAGE_URL = "https://d05ddbf2f644fac51eb9-ada347541e74c0e55b441a38b23f9283.ssl.cf3.rackcdn.com/"
 HH_DEFAULT_IMAGE_URL = "https://5f484275ce3f0eb78b35-c426a21b5cb2958a31f1d62ef51a5c10.ssl.cf3.rackcdn.com/placeholders/placeholder_4x3.png"

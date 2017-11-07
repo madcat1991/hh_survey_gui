@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load main_extras %}
+
+{% block title %}User {{ code }}{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}" />
+    <script>
+        $(document).ready(function() {
+            $('.info_msg').fadeOut(3000, function(){ $(this).remove();});
+        });
+    </script>
+{% endblock %}
+
+{% block header %}
+    <a href="{% url "main:hhuserlist" %}">&laquo To the list of users</a>
+{% endblock %}
+
+{% block content %}
+    {% if info_message %}
+        <div class="info_msg">{{ info_message }}</div>
+    {% endif %}
+
+    {% for err_msg in error_messages %}
+        <div class="error_msg">{{ err_msg }}</div>
+    {% endfor %}
+
+    {% if has_recs %}
+        <h2>{{ code }}</h2>
+        <div class="left">
+        {% if last5_items %}
+            <h2>Last booked items:</h2>
+
+            <div class="items_container">
+            {% for item in last5_items %}
+                <div class="item">
+                    <img src="{{ item.image_uri|hh_image_uri_to_url }}">
+                    {% if item.uri %}
+                        <a href="{{ item.uri|hh_uri_to_url }}" target="_blank">{{ item.name }}</a>
+                    {% else %}
+                        {{ item.name }}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+        </div>
+        <div class="right">
+        {% if items %}
+            <h2>Item recommendations:</h2>
+            <form id="recs_form" action="{% url 'main:hhuseritemeval' code %}" method="post">
+            {% csrf_token %}
+
+                <div class="items_container">
+                {% for item in items %}
+                    <div class="item">
+                        <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
+                        {% if item.obj.uri %}
+                            <a href="{{ item.obj.uri|hh_uri_to_url }}" target="_blank">{{ item.obj.name }}</a>
+                        {% else %}
+                            {{ item.obj.name }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </div>
+
+                <br>
+
+                <div class="hh_user_review">
+                    <div class="label">Evaluate the recommended properties</div>
+                    <ul class="radio">
+                    {% for id_, text_ in review_answers %}
+                        <li>
+                            <input id="user_review_{{ id_ }}" type="radio" name="user_review" value="{{ id_ }}" required {% if id_ == user_answer %}checked{% endif %}/>
+                            <label for="user_review_{{ id_ }}">{{ text_ }}</label>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+
+                <br>
+
+                <div id="submit_btn_container">
+                    <input type="submit" value="Finish and submit review"/>
+                </div>
+            </form>
+        {% else %}
+            <h2>No recommendations</h2>
+        {% endif %}
+        </div>
+    {% else %}
+        <h2>No information about the {{ code }} user</h2>
+    {% endif %}
+{% endblock %}
