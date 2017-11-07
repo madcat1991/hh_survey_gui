@@ -26,9 +26,10 @@ class HHUserListView(LoginRequiredMixin, FilterView, SingleTableView):
     paginate_by = 20
 
     def get_queryset(self):
+        # WARNING!!! we assume that recommendations doesn't change over time!!!
         return HHUser.objects\
             .annotate(
-                n_reviewers=Count("review__reviewer", distinct=True)
+                n_reviews=Count("review__reviewer")
             )\
             .annotate(
                 n_reviews_by_current_user=Count(

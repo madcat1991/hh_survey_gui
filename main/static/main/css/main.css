@@ -91,6 +91,42 @@ label > input:checked + img{ /* (RADIO CHECKED) IMAGE STYLES */
     border:2px solid rgba(255, 0, 0, 0.71);
 }
 
+/* Style the buttons that are used to open and close the accordion panel */
+button.accordion {
+    background-color: #EDF3FE;
+    padding: 10px;
+    outline: none;
+    border: none;
+    display: block;
+    font-size: 14px;
+    font-weight: normal;
+    font-family: "Lucida Grande", Verdana, Helvetica, Arial, sans-serif;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+button.accordion.active, button.accordion:hover {
+    background-color: rgba(0, 0, 255, 0.10);
+}
+
+/* Style the accordion panel. Note: hidden by default */
+div.panel {
+    padding: 10px;
+    background-color: #EDF3FE;
+    display: none;
+}
+
+.panel.table {
+    display: table;
+}
+
+div.table-container {
+    margin-top: 15px;
+}
+
+.table-container table{
+    font-size: 13px;
+}
+
 /*.cluster ul{*/
     /*columns: 2;*/
     /*-webkit-columns: 2;*/

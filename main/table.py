@@ -8,6 +8,6 @@ class HHUserTable(tables.Table):
 
     class Meta:
         model = HHUser
-        order_by = ('is_reviewed', 'n_reviewers')
-        fields = ('code', 'n_reviewers', 'is_reviewed')
+        order_by = ('is_reviewed', 'n_reviews')
+        fields = ('code', 'n_reviews', 'is_reviewed')
         attrs = {'class': 'paleblue'}

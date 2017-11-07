@@ -6,6 +6,15 @@
 {% block title %}Users to evaluate{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}" />
+
+    <script>
+        $(document).ready(function(){
+            $("#filters").click(function(){
+                $("#filters_form").toggleClass("table");
+            });
+        });
+    </script>
 {% endblock %}
 
 {% block header %}
@@ -15,12 +24,13 @@
 {% block content %}
     <h1>Users to evaluate</h1>
 
-    <form action="" method="get">
-        {{ filter.form.as_p }}
-        <input type="submit" />
-    </form>
-
-    <br>
+    <button id="filters" class="accordion">Filters</button>
+    <div id="filters_form" class="panel">
+        <form action="" method="get">
+            {{ filter.form.as_p }}
+            <input type="submit" />
+        </form>
+    </div>
 
     {% render_table table %}
 {% endblock %}
