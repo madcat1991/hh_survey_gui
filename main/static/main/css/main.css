@@ -9,7 +9,10 @@
     padding-left: 10px;
     width: 65%;
     float: left;
-    height: 100%
+    height: 100%;
+    border-radius: 18px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
 }
 
 .item{
