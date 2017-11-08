@@ -88,10 +88,10 @@ LOGGING = {
         }
     },
     'loggers': {
-        # 'django.db.backends': {
-        #     'level': 'DEBUG',
-        #     'handlers': ['console'],
-        # }
+        'main': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
     }
 }
 

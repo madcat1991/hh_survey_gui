@@ -120,3 +120,19 @@ class RecsClusterReview(models.Model):
     class Meta:
         verbose_name = "Recommended cluster review"
         ordering = ['-dt']
+
+
+class UserEvalCase(models.Model):
+    N_CASES_PER_USER = 60
+
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
+    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE)
+    recs_type = models.CharField(
+        max_length=2,
+        choices=HHUserRecsReview.RECS_TYPES,
+        verbose_name="Type of recommendations",
+        blank=False
+    )
+
+    class Meta:
+        verbose_name = "User evaluation case"
