@@ -4,7 +4,7 @@ from main.models import UserEvalCaseView
 
 
 class UserEvalCaseViewTable(tables.Table):
-    # code = tables.LinkColumn('main:hhusereval', args=[tables.A('pk')])
+    hh_user = tables.LinkColumn()
 
     class Meta:
         model = UserEvalCaseView

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.urls import reverse
 
 
 class HHUser(models.Model):
@@ -145,6 +146,13 @@ class UserEvalCase(AbstractUserEvalCase):
 
 class UserEvalCaseView(AbstractUserEvalCase):
     is_reviewed = models.BooleanField()
+
+    def get_absolute_url(self):
+        if self.recs_type == HHUserRecsReview.RT_CLUSTER_BASED:
+            return reverse("main:hhuserclustereval", args=[self.hh_user])
+        elif self.recs_type == HHUserRecsReview.RT_CONTENT_BASED:
+            return reverse("main:hhuseritemeval", args=[self.hh_user])
+        raise Exception("Wrong recs_type value: %s" % self.recs_type)
 
     class Meta:
         ordering = ['hh_user']
