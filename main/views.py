@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
+from main.describer.user import describe_user
 from main.filters import UserEvalCaseViewFilter
 from main.models import Booking, Item, HHUserRecsReview, RecsClusterReview, UserEvalCaseView
 from main.table import UserEvalCaseViewTable
@@ -65,7 +66,7 @@ def get_cluster_recs_cntx(code):
         cl_id, cl_descr = list(data["user_cluster"].items())[0]
         cntx["cluster_id"] = cl_id
         cntx["cluster_descr"] = cl_descr
-        cntx["descr"] = data["user"]
+        cntx["descr"] = describe_user(data["user"])
         cntx["bookings_summary"] = data["prev_bookings_summary"]
 
         # collecting all the data about items from different clusters
@@ -102,7 +103,7 @@ def get_item_recs_cntx(code):
         cntx["has_recs"] = True
 
         # user part
-        cntx["descr"] = data["user"]
+        cntx["descr"] = describe_user(data["user"])
         cntx["bookings_summary"] = data["prev_bookings_summary"]
 
         # preparing output in the right order
