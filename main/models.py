@@ -122,11 +122,9 @@ class RecsClusterReview(models.Model):
         ordering = ['-dt']
 
 
-class UserEvalCase(models.Model):
-    N_CASES_PER_USER = 60
-
+class AbstractUserEvalCase(models.Model):
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
-    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE)
+    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, verbose_name="HH user")
     recs_type = models.CharField(
         max_length=2,
         choices=HHUserRecsReview.RECS_TYPES,
@@ -135,4 +133,19 @@ class UserEvalCase(models.Model):
     )
 
     class Meta:
+        abstract = True
+
+
+class UserEvalCase(AbstractUserEvalCase):
+    N_CASES_PER_USER = 60
+
+    class Meta:
         verbose_name = "User evaluation case"
+
+
+class UserEvalCaseView(AbstractUserEvalCase):
+    is_reviewed = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = "main_userevalcase_view"
