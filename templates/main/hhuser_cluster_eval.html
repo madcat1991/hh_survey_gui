@@ -49,7 +49,7 @@
         <div class="right">
         {% if clusters %}
             <h2>Recommendations:</h2>
-            <form id="recs_form" action="{% url 'main:hhusereval' code %}" method="post">
+            <form id="recs_form" action="{% url 'main:hhuserclustereval' code %}" method="post">
             {% csrf_token %}
 
             {% for cl in clusters %}

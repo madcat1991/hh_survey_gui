@@ -212,7 +212,7 @@ def eval_hh_user_cluster_recs_view(request, code):
                             break
 
     cntx["error_messages"] = error_messages
-    return render(request, "main/hhuser_eval.html", context=cntx)
+    return render(request, "main/hhuser_cluster_eval.html", context=cntx)
 
 
 @login_required
