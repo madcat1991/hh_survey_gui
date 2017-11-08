@@ -8,44 +8,22 @@ from django.shortcuts import render
 from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
-from main.filters import HHUserFilter
-from main.models import HHUser, Booking, Item, HHUserRecsReview, RecsClusterReview
-from main.table import HHUserTable
+from main.filters import UserEvalCaseViewFilter
+from main.models import Booking, Item, HHUserRecsReview, RecsClusterReview, UserEvalCaseView
+from main.table import UserEvalCaseViewTable
 
 
 TOP_CLUSTER_RECS = TOP_ITEM_RECS = 3
 TOP_ITEMS_PER_CLUSTER = 5
 
 
-class HHUserListView(LoginRequiredMixin, FilterView, SingleTableView):
-    model = HHUser
-    table_class = HHUserTable
-    filterset_class = HHUserFilter
+class UserEvalCaseListView(LoginRequiredMixin, FilterView, SingleTableView):
+    model = UserEvalCaseView
+    table_class = UserEvalCaseViewTable
+    filterset_class = UserEvalCaseViewFilter
 
     template_name = 'main/hhuser_list.html'
-    paginate_by = 20
-
-    def get_queryset(self):
-        # WARNING!!! we assume that recommendations doesn't change over time!!!
-        return HHUser.objects\
-            .annotate(
-                n_reviews=Count("review__reviewer")
-            )\
-            .annotate(
-                n_reviews_by_current_user=Count(
-                    Case(
-                        When(review__reviewer=self.request.user, then=1),
-                        default=None
-                    )
-                )
-            )\
-            .annotate(
-                is_reviewed=Case(
-                    When(n_reviews_by_current_user__gt=0, then=True),
-                    default=False,
-                    output_field=BooleanField()
-                ),
-            )
+    paginate_by = 15
 
 
 def get_items_booked_by_user(code, n_latest):
