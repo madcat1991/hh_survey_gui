@@ -8,7 +8,13 @@
     <link rel="stylesheet" href="{% static 'main/css/main.css' %}" />
     <script>
         $(document).ready(function() {
-            $('.info_msg').fadeOut(3000, function(){ $(this).remove();});
+            $('.info_msg').fadeOut(3000, function(){
+                $(this).remove();
+            });
+
+            $("#descr").click(function(){
+                $("#descr").next(".panel").toggleClass("table");
+            });
         });
     </script>
 {% endblock %}
@@ -43,6 +49,11 @@
                     {% endif %}
                 </div>
             {% endfor %}
+            </div>
+
+            <button id="descr" class="accordion">Description</button>
+            <div class="panel">
+                <p>{{ descr }}</p>
             </div>
         {% endif %}
         </div>

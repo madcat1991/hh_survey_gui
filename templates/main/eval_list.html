@@ -11,7 +11,7 @@
     <script>
         $(document).ready(function(){
             $("#filters").click(function(){
-                $("#filters_form").toggleClass("table");
+                $("#filters").next(".panel").toggleClass("table");
             });
         });
     </script>
@@ -25,7 +25,7 @@
     <h1>Users to evaluate</h1>
 
     <button id="filters" class="accordion">Filters</button>
-    <div id="filters_form" class="panel">
+    <div class="panel">
         <form action="" method="get">
             {{ filter.form.as_p }}
             <input type="submit" />
