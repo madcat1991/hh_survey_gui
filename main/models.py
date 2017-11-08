@@ -147,5 +147,6 @@ class UserEvalCaseView(AbstractUserEvalCase):
     is_reviewed = models.BooleanField()
 
     class Meta:
+        ordering = ['hh_user']
         managed = False
         db_table = "main_userevalcase_view"

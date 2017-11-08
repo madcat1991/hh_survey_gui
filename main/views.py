@@ -25,6 +25,10 @@ class UserEvalCaseListView(LoginRequiredMixin, FilterView, SingleTableView):
     template_name = 'main/eval_list.html'
     paginate_by = 15
 
+    def get_queryset(self):
+        # WARNING!!! we assume that recommendations doesn't change over time!!!
+        return UserEvalCaseView.objects.filter(reviewer=self.request.user)
+
 
 def get_items_booked_by_user(code, n_latest):
     items = Booking.objects \
