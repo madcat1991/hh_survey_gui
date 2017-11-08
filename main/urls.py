@@ -4,7 +4,7 @@ from main.views import UserEvalCaseListView, eval_hh_user_cluster_recs_view, eva
 
 app_name = "main"
 urlpatterns = [
-    url(r'^$', UserEvalCaseListView.as_view(), name='hhuserlist'),
+    url(r'^$', UserEvalCaseListView.as_view(), name='evallist'),
     url(r'^(?P<code>[\w0-9]+)/$', eval_hh_user_cluster_recs_view, name='hhusereval'),
     url(r'^item/(?P<code>[\w0-9]+)/$', eval_hh_user_item_recs_view, name='hhuseritemeval'),
 ]

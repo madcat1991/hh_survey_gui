@@ -22,7 +22,7 @@ class UserEvalCaseListView(LoginRequiredMixin, FilterView, SingleTableView):
     table_class = UserEvalCaseViewTable
     filterset_class = UserEvalCaseViewFilter
 
-    template_name = 'main/hhuser_list.html'
+    template_name = 'main/eval_list.html'
     paginate_by = 15
 
 
