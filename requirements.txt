@@ -4,3 +4,4 @@ django-filter==1.0.4
 django-tables2==1.13.0
 ipdb==0.10.3
 requests==2.18.4
+sqlparse==0.2.4
