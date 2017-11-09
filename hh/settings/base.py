@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Quick-start development settings - unsuitable for production
@@ -152,10 +152,10 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # file paths
-API_DATA_DIR = "/Users/tural/PyProjects/clustered_cars/data/"
-USER_CLUSTERS_JSON_PATH = os.path.join(API_DATA_DIR, "clustered/user.txt")
-BOOKING_CSV_PATH = os.path.join(API_DATA_DIR, "cleaned/booking.csv")
-ITEM_CSV_PATH = os.path.join(API_DATA_DIR, "cleaned/property.csv")
+API_DATA_DIR = None
+USER_CLUSTERS_JSON_PATH = None
+BOOKING_CSV_PATH = None
+ITEM_CSV_PATH = None
 
 # API
 API_CLUSTER_RECS_URL = "http://46.18.25.101/cluster/recs/"
