@@ -47,10 +47,10 @@ class HHUserRecsReview(models.Model):
     RA_3 = "3"
     RA_4 = "4"
     REVIEW_ANSWERS = (
-        (RA_1, "Answer 1"),
-        (RA_2, "Answer 2"),
-        (RA_3, "Answer 3"),
-        (RA_4, "Answer 4"),
+        (RA_1, "All the items match the user's preference and have a high variety"),
+        (RA_2, "All the items match the user's preference, but are similar to each other"),
+        (RA_3, "Some of the items match the user's preference"),
+        (RA_4, "The items don't match the user's preference"),
     )
     answer = models.CharField(
         max_length=1,
@@ -102,10 +102,10 @@ class RecsClusterReview(models.Model):
     RA_3 = "3"
     RA_4 = "4"
     REVIEW_ANSWERS = (
-        (RA_1, "Answer 1"),
-        (RA_2, "Answer 2"),
-        (RA_3, "Answer 3"),
-        (RA_4, "Answer 4"),
+        (RA_1, "The property perfectly fits the user"),
+        (RA_2, "The property doesn't completely fit the user, but the cluster does"),
+        (RA_3, "The property doesn't fit the user, but the cluster does"),
+        (RA_4, "Neither the property nor the cluster fit the user"),
     )
     answer = models.CharField(
         max_length=1,

@@ -65,7 +65,7 @@ div.message {
     background: rgba(255, 0, 0, 0.3);
 }
 
-div.hh_user_review div.label {
+div.label {
     padding: 0;
     font-weight: bold;
 }
