@@ -1,0 +1,6 @@
+beautifulsoup4==4.6.0
+Django==1.11.6
+django-filter==1.0.4
+django-tables2==1.13.0
+ipdb==0.10.3
+requests==2.18.4
