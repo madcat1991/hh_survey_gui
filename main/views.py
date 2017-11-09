@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
+from main.describer.booking import describe_booking_cluster
 from main.describer.user import describe_user
 from main.filters import UserEvalCaseViewFilter
 from main.models import Booking, Item, HHUserRecsReview, RecsClusterReview, UserEvalCaseView
@@ -83,7 +84,7 @@ def get_cluster_recs_cntx(code):
 
             cntx["clusters"].append({
                 "id": rec["bg_id"],
-                "features": rec["features"],
+                "descr": describe_booking_cluster(rec["features"]),
                 "items": cluster_items
             })
     else:
