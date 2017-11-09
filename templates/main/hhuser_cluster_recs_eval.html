@@ -12,8 +12,8 @@
                 $(this).remove();
             });
 
-            $("#descr").click(function(){
-                $("#descr").next(".panel").toggleClass("table");
+            $(".accordion").click(function(){
+                $(this).next(".panel").toggleClass("table");
             });
         });
     </script>
@@ -51,7 +51,7 @@
             {% endfor %}
             </div>
 
-            <button id="descr" class="accordion">Description</button>
+            <button type="button" class="accordion btn">Description</button>
             <div class="panel">
                 <p>{{ descr }}</p>
             </div>
@@ -127,7 +127,7 @@
                 <br>
 
                 <div id="submit_btn_container">
-                    <input type="submit" value="Finish and submit review"/>
+                    <input class="btn" type="submit" value="Finish and submit review"/>
                 </div>
             </form>
         {% else %}
