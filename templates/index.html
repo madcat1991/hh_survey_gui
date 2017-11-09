@@ -3,8 +3,10 @@
 {% block title %}Home page{% endblock %}
 
 {% block content %}
-    <h1>Menu</h1>
+    <h2>Welcome to the HH's RecSys evaluation tool</h2>
+    <p>Please proceed to the &quot;Evaluate&quot; section.</p>
+    <h3>Menu</h3>
     <ul>
-        <li><a href="{% url 'main:evallist' %}">Users to evaluate</a></li>
+        <li><a href="{% url 'main:evallist' %}">Evaluate</a></li>
     </ul>
 {% endblock %}

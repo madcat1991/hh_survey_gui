@@ -134,7 +134,7 @@ def eval_hh_user_cluster_recs_view(request, code):
                 cntx["user_answer"] = user_answer
             else:
                 error_messages.append(
-                    "Fill the evaluation of the selected for the user items"
+                    "Fill the evaluation of the items selected for the user"
                 )
 
             # cluster evaluation
@@ -148,7 +148,7 @@ def eval_hh_user_cluster_recs_view(request, code):
                     cl_obj["answer"] = cl_answer
                 else:
                     error_messages.append(
-                        "Fill the evaluation of the item selected for cluster %s" % cl_id
+                        "Fill the evaluation of the item selected for the cluster #%s" % cl_id
                     )
 
                 # selected item
@@ -163,11 +163,11 @@ def eval_hh_user_cluster_recs_view(request, code):
                             break
                     else:
                         error_messages.append(
-                            "Select existing item for cluster %s" % cl_id
+                            "Select existing item for the cluster #%s" % cl_id
                         )
                 else:
                     error_messages.append(
-                        "Select item for cluster %s" % cl_id
+                        "Select an item for the cluster #%s" % cl_id
                     )
 
                 # data to create/update cluster review objects
@@ -186,7 +186,7 @@ def eval_hh_user_cluster_recs_view(request, code):
                         cl_dict, review=r_obj, cluster_id=cl_id, cluster_pos=cl_pos
                     )
 
-                cntx["info_message"] = "The review has been successfully stored"
+                cntx["info_message"] = "The review has been successfully submitted"
         else:
             try:
                 recs_review_obj = HHUserRecsReview.objects.get(
@@ -234,7 +234,7 @@ def eval_hh_user_item_recs_view(request, code):
                 cntx["user_answer"] = user_answer
             else:
                 error_messages.append(
-                    "Fill the evaluation of the selected for the user items"
+                    "Fill the evaluation of the items selected for the user"
                 )
 
             if not error_messages:
@@ -242,7 +242,7 @@ def eval_hh_user_item_recs_view(request, code):
                     {"answer": user_answer}, reviewer=request.user, hh_user_id=code,
                     recs_type=HHUserRecsReview.RT_CONTENT_BASED
                 )
-                cntx["info_message"] = "The review has been successfully stored"
+                cntx["info_message"] = "The review has been successfully submitted"
         else:
             try:
                 recs_review_obj = HHUserRecsReview.objects.get(
