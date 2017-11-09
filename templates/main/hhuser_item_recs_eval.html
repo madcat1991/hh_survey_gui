@@ -25,11 +25,11 @@
 
 {% block content %}
     {% if info_message %}
-        <div class="info_msg">{{ info_message }}</div>
+        <div class="message info_msg">{{ info_message }}</div>
     {% endif %}
 
     {% for err_msg in error_messages %}
-        <div class="error_msg">{{ err_msg }}</div>
+        <div class="message error_msg">{{ err_msg }}</div>
     {% endfor %}
 
     {% if has_recs %}

@@ -56,12 +56,12 @@ div.message {
 }
 
 .info_msg {
-    border: solid thin rgba(0, 114, 255, 0.5);
+    border: solid thin rgba(0, 114, 255, 0.5) !important;
     background: rgba(0, 114, 255, 0.3);
 }
 
 .error_msg {
-    border: solid thin rgba(255, 0, 0, 0.5);
+    border: solid thin rgba(255, 0, 0, 0.5) !important;
     background: rgba(255, 0, 0, 0.3);
 }
 
