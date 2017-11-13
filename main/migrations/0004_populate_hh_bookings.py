@@ -33,7 +33,7 @@ def populate_bookings(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0004_populate_hh_users'),
+        ('main', '0003_populate_hh_users'),
     ]
 
     operations = [

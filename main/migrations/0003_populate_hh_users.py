@@ -86,7 +86,7 @@ def populate_hh_users(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0003_populate_hh_items'),
+        ('main', '0002_populate_hh_items'),
     ]
 
     operations = [

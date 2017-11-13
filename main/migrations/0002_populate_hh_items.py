@@ -70,7 +70,7 @@ def populate_hh_items(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0002_main_userevalcase_view'),
+        ('main', '0001_initial'),
     ]
 
     operations = [
