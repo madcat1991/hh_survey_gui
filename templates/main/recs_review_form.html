@@ -5,7 +5,7 @@
 
 {% block title %}User {{ code }}{% endblock %}
 {% block head %}
-    <link rel="stylesheet" href="{% static 'main/css/main.css' %}" />
+    <link rel="stylesheet" href="{% static 'main/css/main_form.css' %}" />
     <script>
         $(document).ready(function() {
             $('.info_msg').fadeOut(3000, function(){
@@ -32,16 +32,49 @@
         <div class="message error_msg">{{ err_msg }}</div>
     {% endfor %}
 
-    {% if has_recs %}
-        <h2>User {{ code }}</h2>
-        <div class="left">
-        {% if last5_items %}
-            <h2>Last booked items:</h2>
+    {{ qa_form.non_field_errors }}
+
+    <!-- user info -->
+    <h2>User {{ review_obj.hh_user }}</h2>
+    <div class="left">
+    {% if last5_items %}
+        <h2>Last booked items:</h2>
+
+        <div class="items_container">
+        {% for item in last5_items %}
+            <div class="item">
+                <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
+                {% if item.obj.uri %}
+                    <a href="{{ item.obj.uri|hh_uri_to_url }}" target="_blank">{{ item.obj.name }}</a>
+                {% else %}
+                    {{ item.obj.name }}
+                {% endif %}
+            </div>
+        {% endfor %}
+        </div>
+
+        <button id="descr" type="button" class="accordion btn">Description</button>
+        <div class="panel">
+            <p>{{ descr }}</p>
+        </div>
+    {% endif %}
+    </div>
+
+    <!-- recs info -->
+    <div class="right">
+    {% if items %}
+        <h2>Recommendations:</h2>
+        <form id="recs_form" action="{% url 'main:recsreviewview' review_obj.pk %}" method="post">
+        {% csrf_token %}
 
             <div class="items_container">
-            {% for item in last5_items %}
+            {% for item in items %}
                 <div class="item">
-                    <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
+                    <label>
+                        <input type="checkbox" name="items" value="item_{{ item.id }}" {% if item.selected %}checked{% endif %}/>
+                        <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
+                    </label>
+
                     {% if item.obj.uri %}
                         <a href="{{ item.obj.uri|hh_uri_to_url }}" target="_blank">{{ item.obj.name }}</a>
                     {% else %}
@@ -51,56 +84,70 @@
             {% endfor %}
             </div>
 
-            <button id="descr" type="button" class="accordion btn">Description</button>
-            <div class="panel">
-                <p>{{ descr }}</p>
+            <br>
+
+            <div class="label">Rate the following statements</div>
+            <table class="likert">
+                <thead>
+                    <tr>
+                        <th class="statement"></th>
+                        {% for radio in qa_form.quality_qa %}
+                            <th class="choice">{{ radio.choice_label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="statement">{{ qa_form.quality_qa.label }}</td>
+                        {% for radio in qa_form.quality_qa %}
+                            <td class="choice">{{ radio.tag }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="statement">{{ qa_form.diversity_qa.label }}</td>
+                        {% for radio in qa_form.diversity_qa %}
+                            <td class="choice">{{ radio.tag }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+
+            <br>
+
+            <div class="label">Mark the items and rate the following statements</div>
+            <table class="likert">
+                <thead>
+                    <tr>
+                        <th class="statement"></th>
+                        {% for radio in qa_form.easiness_qa %}
+                            <th class="choice">{{ radio.choice_label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="statement">{{ qa_form.easiness_qa.label }}</td>
+                        {% for radio in qa_form.easiness_qa %}
+                            <td class="choice">{{ radio.tag }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="statement">{{ qa_form.happiness_qa.label }}</td>
+                        {% for radio in qa_form.happiness_qa %}
+                            <td class="choice">{{ radio.tag }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+
+            <br>
+
+            <div id="submit_btn_container">
+                <input class="btn" type="submit" value="Finish and submit review"/>
             </div>
-        {% endif %}
-        </div>
-        <div class="right">
-        {% if items %}
-            <h2>Item recommendations:</h2>
-            <form id="recs_form" action="{% url 'main:hhuseritemeval' code %}" method="post">
-            {% csrf_token %}
-
-                <div class="items_container">
-                {% for item in items %}
-                    <div class="item">
-                        <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
-                        {% if item.obj.uri %}
-                            <a href="{{ item.obj.uri|hh_uri_to_url }}" target="_blank">{{ item.obj.name }}</a>
-                        {% else %}
-                            {{ item.obj.name }}
-                        {% endif %}
-                    </div>
-                {% endfor %}
-                </div>
-
-                <br>
-
-                <div class="hh_user_review">
-                    <div class="label">Evaluate the recommended properties</div>
-                    <ul class="radio">
-                    {% for id_, text_ in review_answers %}
-                        <li>
-                            <input id="user_review_{{ id_ }}" type="radio" name="user_review" value="{{ id_ }}" required {% if id_ == user_answer %}checked{% endif %}/>
-                            <label for="user_review_{{ id_ }}">{{ text_ }}</label>
-                        </li>
-                    {% endfor %}
-                    </ul>
-                </div>
-
-                <br>
-
-                <div id="submit_btn_container">
-                    <input class="btn" type="submit" value="Finish and submit review"/>
-                </div>
-            </form>
-        {% else %}
-            <h2>No recommendations</h2>
-        {% endif %}
-        </div>
+        </form>
     {% else %}
-        <h2>No information about the {{ code }} user</h2>
+        <h2>No recommendations</h2>
     {% endif %}
+    </div>
 {% endblock %}
