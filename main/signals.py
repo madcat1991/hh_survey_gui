@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from main.models import HHUser, RecsReview, UserEvalCase
+from main.models import HHUser, RecsReview
 
 
 logger = logging.getLogger(__name__)
@@ -19,9 +19,9 @@ def user_on_insert_handler(sender, instance, created, **kwargs):
         recs_types = [key for key, value in RecsReview.RECS_TYPES]
         pairs = [(uid, rt) for uid in uids for rt in recs_types]
 
-        pairs = random.sample(pairs, UserEvalCase.N_CASES_PER_USER)
+        pairs = random.sample(pairs, RecsReview.N_REVIEW_PER_USER)
 
         for uid, rt in pairs:
-            case = UserEvalCase(reviewer=instance, hh_user_id=uid, recs_type=rt)
+            case = RecsReview(reviewer=instance, hh_user_id=uid, recs_type=rt)
             case.save()
         logger.info('Evaluation cases for a user "%s" have been created', instance)

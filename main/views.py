@@ -3,33 +3,37 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Max
-from django.shortcuts import render
+from django.db.models import Max, Case, When, BooleanField
+from django.shortcuts import render, get_object_or_404
 from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
 from main.describer.booking import describe_booking_cluster
 from main.describer.user import describe_user
-from main.filters import UserEvalCaseViewFilter
-from main.models import Booking, Item, HHUserRecsReview, RecsClusterReview, UserEvalCaseView
-from main.table import UserEvalCaseViewTable
+from main.filters import RecsReviewFilter
+from main.models import Booking, Item, RecsReview
+from main.table import RecsReviewTable
 
 
 TOP_CLUSTER_RECS = TOP_ITEM_RECS = 3
 TOP_ITEMS_PER_CLUSTER = 5
 
 
-class UserEvalCaseListView(LoginRequiredMixin, FilterView, SingleTableView):
-    model = UserEvalCaseView
-    table_class = UserEvalCaseViewTable
-    filterset_class = UserEvalCaseViewFilter
+class RecsReviewListView(LoginRequiredMixin, FilterView, SingleTableView):
+    model = RecsReview
+    table_class = RecsReviewTable
+    filterset_class = RecsReviewFilter
 
-    template_name = 'main/eval_list.html'
+    template_name = 'main/recs_review_list.html'
     paginate_by = 15
 
     def get_queryset(self):
-        # WARNING!!! we assume that recommendations doesn't change over time!!!
-        return UserEvalCaseView.objects.filter(reviewer=self.request.user)
+        return RecsReview.objects.filter(reviewer=self.request.user)\
+            .annotate(is_reviewed=Case(
+                When(qa__isnull=True, then=0),
+                default=1,
+                output_field=BooleanField()
+            ))
 
 
 def get_items_booked_by_user(code, n_latest):
@@ -257,3 +261,9 @@ def eval_hh_user_item_recs_view(request, code):
 
     cntx["error_messages"] = error_messages
     return render(request, "main/hhuser_item_recs_eval.html", context=cntx)
+
+
+@login_required
+def recs_review_view(request, pk):
+    review_obj = get_object_or_404(RecsReview.objects.select_related(), pk=pk)
+    return render(request, "main/recs_review_form.html")

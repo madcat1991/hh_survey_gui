@@ -1,13 +1,13 @@
-import django_tables2 as tables
+from django_tables2 import A, Table, LinkColumn
 
-from main.models import UserEvalCaseView
+from main.models import RecsReview
 
 
-class UserEvalCaseViewTable(tables.Table):
-    hh_user = tables.LinkColumn()
+class RecsReviewTable(Table):
+    hh_user = LinkColumn("main:recsreviewview", args=[A('pk')])
 
     class Meta:
-        model = UserEvalCaseView
+        model = RecsReview
         order_by = ['is_reviewed']
         fields = ('hh_user', 'recs_type', 'is_reviewed')
         attrs = {'class': 'paleblue'}
