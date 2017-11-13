@@ -3,7 +3,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, When, Case, BooleanField, Max
+from django.db.models import Max
 from django.shortcuts import render
 from django_filters.views import FilterView
 from django_tables2 import SingleTableView
