@@ -11,6 +11,7 @@ from django_tables2 import SingleTableView
 from main.describer.booking import describe_booking_cluster
 from main.describer.user import describe_user
 from main.filters import RecsReviewFilter
+from main.forms import RecsReviewQAForm
 from main.models import Booking, Item, RecsReview
 from main.table import RecsReviewTable
 
@@ -33,7 +34,8 @@ class RecsReviewListView(LoginRequiredMixin, FilterView, SingleTableView):
                 When(qa__isnull=True, then=0),
                 default=1,
                 output_field=BooleanField()
-            ))
+            ))\
+            .order_by('is_reviewed')
 
 
 def get_items_booked_by_user(code, n_latest):
@@ -266,4 +268,14 @@ def eval_hh_user_item_recs_view(request, code):
 @login_required
 def recs_review_view(request, pk):
     review_obj = get_object_or_404(RecsReview.objects.select_related(), pk=pk)
-    return render(request, "main/recs_review_form.html")
+    qa_form = RecsReviewQAForm(instance=review_obj.qa)
+
+    if review_obj.recs_type == RecsReview.RT_CONTENT_BASED:
+        cntx = get_item_recs_cntx(review_obj.hh_user.pk)
+    else:
+        cntx = get_cluster_recs_cntx(review_obj.hh_user.pk)
+
+    cntx["last5_items"] = get_items_booked_by_user(review_obj.hh_user.pk, TOP_ITEMS_PER_CLUSTER)
+    cntx["qa_form"] = qa_form
+    cntx["review_obj"] = review_obj
+    return render(request, "main/recs_review_form.html", context=cntx)

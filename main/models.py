@@ -71,6 +71,7 @@ class RecsReview(models.Model):
 
     class Meta:
         verbose_name = "Recommendations review"
+        ordering = ['-dt']
 
 
 class RecsReviewQA(models.Model):
@@ -78,25 +79,25 @@ class RecsReviewQA(models.Model):
         max_length=2,
         choices=LIKERT_SCALE,
         verbose_name="I liked the recommendations provided by the system",
-        blank=False,
+        default=None
     )
     diversity_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
         verbose_name="The recommendations contained a lot of variety",
-        blank=False,
+        default=None
     )
     easiness_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
         verbose_name="Selecting the best properties was easy",
-        blank=False,
+        default=None
     )
     happiness_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
         verbose_name="I am happy with the properties I have chosen",
-        blank=False,
+        default=None
     )
 
     class Meta:
