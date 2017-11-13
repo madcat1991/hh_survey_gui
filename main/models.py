@@ -67,7 +67,10 @@ class RecsReview(models.Model):
     )
 
     dt = models.DateTimeField(auto_now=True)
-    qa = models.ForeignKey("main.RecsReviewQA", on_delete=models.SET_NULL, null=True)
+    qa = models.ForeignKey("main.RecsReviewQA", on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return "%s review of %s's %s recs" % (self.reviewer, self.hh_user, self.recs_type)
 
     class Meta:
         verbose_name = "Recommendations review"
@@ -100,17 +103,23 @@ class RecsReviewQA(models.Model):
         default=None
     )
 
+    def __str__(self):
+        return "%s" % self.pk
+
     class Meta:
         verbose_name = "QA about recommendations"
         verbose_name_plural = "QAs about recommendations"
 
 
 class RecsReviewSelectedItem(models.Model):
-    review = models.ForeignKey(RecsReview, on_delete=models.CASCADE)
+    review = models.ForeignKey(RecsReview, on_delete=models.CASCADE, related_name='selected_item')
     item = models.ForeignKey(Item)
     position = models.IntegerField(
         verbose_name="Item position", validators=[MinValueValidator(0)]
     )
+
+    def __str__(self):
+        return "%s" % self.pk
 
     class Meta:
         verbose_name = "Selected item for a user"

@@ -3,6 +3,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.db.models import Max, Case, When, BooleanField
 from django.shortcuts import render, get_object_or_404
 from django_filters.views import FilterView
@@ -12,7 +13,7 @@ from main.describer.booking import describe_booking_cluster
 from main.describer.user import describe_user
 from main.filters import RecsReviewFilter
 from main.forms import RecsReviewQAForm
-from main.models import Booking, Item, RecsReview
+from main.models import Booking, Item, RecsReview, RecsReviewSelectedItem
 from main.table import RecsReviewTable
 
 
@@ -98,38 +99,14 @@ def get_cluster_recs_cntx(code):
     return cntx
 
 
-def get_item_recs_cntx(code):
-    req = requests.get(
-        settings.API_ITEM_RECS_URL,
-        params={"uid": code, "top": TOP_ITEM_RECS}
-    )
-    data = req.json()["result"]
-
-    cntx = {}
-    if data:
-        cntx["has_recs"] = True
-
-        # user part
-        cntx["descr"] = describe_user(data["user"])
-        cntx["bookings_summary"] = data["prev_bookings_summary"]
-
-        # preparing output in the right order
-        rec_iids = [rec["propcode"] for rec in data["recs"]]
-        rec_item_objs = {obj.pk: obj for obj in Item.objects.filter(pk__in=rec_iids)}
-        cntx["items"] = [{"id": iid, "obj": rec_item_objs[iid]} for iid in rec_iids]
-    else:
-        cntx["has_recs"] = False
-    return cntx
-
-
 @login_required
 def eval_hh_user_cluster_recs_view(request, code):
     # WARNING!!! we assume that recommendations doesn't change over time!!!
     cntx = get_cluster_recs_cntx(code)
     cntx["code"] = code
     cntx["last5_items"] = get_items_booked_by_user(code, TOP_ITEMS_PER_CLUSTER)
-    cntx["cluster_review_answers"] = RecsClusterReview.REVIEW_ANSWERS
-    cntx["review_answers"] = HHUserRecsReview.REVIEW_ANSWERS
+    # cntx["cluster_review_answers"] = RecsClusterReview.REVIEW_ANSWERS
+    # cntx["review_answers"] = RecsReview.REVIEW_ANSWERS
 
     error_messages = []
     if cntx["has_recs"]:
@@ -182,24 +159,24 @@ def eval_hh_user_cluster_recs_view(request, code):
                 )
 
             if not error_messages:
-                r_obj, is_created = HHUserRecsReview.objects.update_or_create(
+                r_obj, is_created = RecsReview.objects.update_or_create(
                     {"answer": user_answer}, reviewer=request.user, hh_user_id=code,
-                    recs_type=HHUserRecsReview.RT_CLUSTER_BASED
+                    recs_type=RecsReview.RT_CLUSTER_BASED
                 )
 
-                for cl_id, cl_pos, cl_dict in cluster_review_data:
-                    RecsClusterReview.objects.update_or_create(
-                        cl_dict, review=r_obj, cluster_id=cl_id, cluster_pos=cl_pos
-                    )
+                # for cl_id, cl_pos, cl_dict in cluster_review_data:
+                #     RecsClusterReview.objects.update_or_create(
+                #         cl_dict, review=r_obj, cluster_id=cl_id, cluster_pos=cl_pos
+                #     )
 
                 cntx["info_message"] = "The review has been successfully submitted"
         else:
             try:
-                recs_review_obj = HHUserRecsReview.objects.get(
+                recs_review_obj = RecsReview.objects.get(
                     reviewer=request.user, hh_user__pk=code,
-                    recs_type=HHUserRecsReview.RT_CLUSTER_BASED
+                    recs_type=RecsReview.RT_CLUSTER_BASED
                 )
-            except HHUserRecsReview.DoesNotExist:
+            except RecsReview.DoesNotExist:
                 recs_review_obj = None
 
             if recs_review_obj is not None:
@@ -223,59 +200,79 @@ def eval_hh_user_cluster_recs_view(request, code):
     return render(request, "main/hhuser_cluster_recs_eval.html", context=cntx)
 
 
-@login_required
-def eval_hh_user_item_recs_view(request, code):
-    # WARNING!!! we assume that recommendations doesn't change over time!!!
-    cntx = get_item_recs_cntx(code)
-    cntx["code"] = code
-    cntx["last5_items"] = get_items_booked_by_user(code, TOP_ITEMS_PER_CLUSTER)
-    cntx["review_answers"] = HHUserRecsReview.REVIEW_ANSWERS
+def get_item_recs_cntx(code):
+    req = requests.get(
+        settings.API_ITEM_RECS_URL,
+        params={"uid": code, "top": TOP_ITEM_RECS}
+    )
+    data = req.json()["result"]
 
-    error_messages = []
-    if cntx["has_recs"]:
-        if request.method == 'POST':
-            # user review answer
-            user_answer = request.POST.get("user_review")
-            if user_answer:
-                cntx["user_answer"] = user_answer
-            else:
-                error_messages.append(
-                    "Fill the evaluation of the items selected for the user"
-                )
+    cntx = {}
+    if data:
+        cntx["has_recs"] = True
 
-            if not error_messages:
-                HHUserRecsReview.objects.update_or_create(
-                    {"answer": user_answer}, reviewer=request.user, hh_user_id=code,
-                    recs_type=HHUserRecsReview.RT_CONTENT_BASED
-                )
-                cntx["info_message"] = "The review has been successfully submitted"
-        else:
-            try:
-                recs_review_obj = HHUserRecsReview.objects.get(
-                    reviewer=request.user, hh_user__pk=code,
-                    recs_type=HHUserRecsReview.RT_CONTENT_BASED
-                )
-            except HHUserRecsReview.DoesNotExist:
-                recs_review_obj = None
+        # user part
+        cntx["descr"] = describe_user(data["user"])
 
-            if recs_review_obj is not None:
-                cntx["user_answer"] = recs_review_obj.answer
-
-    cntx["error_messages"] = error_messages
-    return render(request, "main/hhuser_item_recs_eval.html", context=cntx)
+        # preparing output in the right order
+        rec_iids = [rec["propcode"] for rec in data["recs"]]
+        rec_item_objs = {obj.pk: obj for obj in Item.objects.filter(pk__in=rec_iids)}
+        cntx["items"] = [{"id": iid, "obj": rec_item_objs[iid]} for iid in rec_iids]
+    else:
+        cntx["has_recs"] = False
+    return cntx
 
 
 @login_required
+@transaction.atomic
 def recs_review_view(request, pk):
-    review_obj = get_object_or_404(RecsReview.objects.select_related(), pk=pk)
-    qa_form = RecsReviewQAForm(instance=review_obj.qa)
+    review_obj = get_object_or_404(RecsReview.objects.select_related(), pk=pk, reviewer=request.user)
 
     if review_obj.recs_type == RecsReview.RT_CONTENT_BASED:
         cntx = get_item_recs_cntx(review_obj.hh_user.pk)
     else:
         cntx = get_cluster_recs_cntx(review_obj.hh_user.pk)
 
+    error_messages = []
+    if request.method == 'POST':
+        qa_form = RecsReviewQAForm(request.POST, instance=review_obj.qa)
+
+        # selected items
+        iids_and_positions = []
+        selected_iids = set(request.POST.getlist("items", []))
+        for i_pos, i_obj in enumerate(cntx["items"]):
+            if i_obj["id"] in selected_iids:
+                iids_and_positions.append((i_obj["id"], i_pos))
+
+        if len(iids_and_positions) > 0:
+            if qa_form.is_valid():
+                # delete old items
+                review_obj.selected_item.all().delete()
+
+                # create news
+                for iid, i_pos in iids_and_positions:
+                    RecsReviewSelectedItem(review=review_obj, item_id=iid, position=i_pos).save()
+
+                # save QA
+                qa_instance = qa_form.save()
+
+                # update review
+                review_obj.qa = qa_instance
+                review_obj.save()
+
+                cntx["info_message"] = "The review has been successfully submitted"
+        else:
+            error_messages.append("Please select at least one property")
+    else:
+        qa_form = RecsReviewQAForm(instance=review_obj.qa)
+        selected_iids = {obj.item_id for obj in review_obj.selected_item.all()}
+
+    for i_obj in cntx["items"]:
+        if i_obj["id"] in selected_iids:
+            i_obj["selected"] = True
+
     cntx["last5_items"] = get_items_booked_by_user(review_obj.hh_user.pk, TOP_ITEMS_PER_CLUSTER)
     cntx["qa_form"] = qa_form
     cntx["review_obj"] = review_obj
+    cntx["error_messages"] = error_messages
     return render(request, "main/recs_review_form.html", context=cntx)

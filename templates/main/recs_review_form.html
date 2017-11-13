@@ -71,7 +71,7 @@
             {% for item in items %}
                 <div class="item">
                     <label>
-                        <input type="checkbox" name="items" value="item_{{ item.id }}" {% if item.selected %}checked{% endif %}/>
+                        <input type="checkbox" name="items" value="{{ item.id }}" {% if item.selected %}checked{% endif %}/>
                         <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
                     </label>
 
