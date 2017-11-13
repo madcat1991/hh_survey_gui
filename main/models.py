@@ -4,6 +4,15 @@ from django.db import models
 from django.urls import reverse
 
 
+LIKERT_SCALE = (
+    ("sa", "Strongly agree"),
+    ("ag", "Agree"),
+    ("nt", "Neutral"),
+    ("dg", "Disagree"),
+    ("sd", "Strongly disagree"),
+)
+
+
 class HHUser(models.Model):
     code = models.CharField(max_length=11, unique=True, primary_key=True, verbose_name="user id")
     cluster_id = models.IntegerField(unique=True, verbose_name="user cluster id")
@@ -38,27 +47,11 @@ class Booking(models.Model):
         ordering = ['-dt']
 
 
-class HHUserRecsReview(models.Model):
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
-    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, related_name='review')
+class RecsReview(models.Model):
+    N_REVIEW_PER_USER = 60
 
-    RA_1 = "1"
-    RA_2 = "2"
-    RA_3 = "3"
-    RA_4 = "4"
-    REVIEW_ANSWERS = (
-        (RA_1, "All the items match the user's preference and have a high variety"),
-        (RA_2, "All the items match the user's preference, but are similar to each other"),
-        (RA_3, "Some of the items match the user's preference"),
-        (RA_4, "The items don't match the user's preference"),
-    )
-    answer = models.CharField(
-        max_length=1,
-        choices=REVIEW_ANSWERS,
-        default=RA_1,
-        verbose_name="Review",
-        blank=False,
-    )
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
+    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, verbose_name="HH user")
 
     RT_CONTENT_BASED = "cb"
     RT_CLUSTER_BASED = "cl"
@@ -73,54 +66,56 @@ class HHUserRecsReview(models.Model):
         verbose_name="Type of recommendations",
         blank=False,
     )
+
     dt = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return 'User "%s" about %s recs of HH user "%s": %s' % \
-               (self.reviewer, self.recs_type, self.hh_user, self.answer)
-
     class Meta:
-        verbose_name = "HH user recommendations review"
-        ordering = ['-dt']
+        verbose_name = "Recommendations review"
 
 
-class RecsClusterReview(models.Model):
-    cluster_id = models.IntegerField(
-        verbose_name="Item cluster id", validators=[MinValueValidator(0)], null=True,
+class RecsReviewQA(models.Model):
+    review = models.ForeignKey(RecsReview, on_delete=models.CASCADE)
+    quality_qa = models.CharField(
+        max_length=2,
+        choices=LIKERT_SCALE,
+        verbose_name="I liked the recommendations provided by the system",
+        blank=False,
     )
-    cluster_pos = models.IntegerField(
-        verbose_name="Cluster position", validators=[MinValueValidator(0)], null=True,
+    diversity_qa = models.CharField(
+        max_length=2,
+        choices=LIKERT_SCALE,
+        verbose_name="The recommendations contained a lot of variety",
+        blank=False,
     )
-
-    item = models.ForeignKey(Item)
-    item_pos = models.IntegerField(
-        verbose_name="Item position", validators=[MinValueValidator(0)]
+    easiness_qa = models.CharField(
+        max_length=2,
+        choices=LIKERT_SCALE,
+        verbose_name="Selecting the best properties was easy",
+        blank=False,
     )
-
-    RA_1 = "1"
-    RA_2 = "2"
-    RA_3 = "3"
-    RA_4 = "4"
-    REVIEW_ANSWERS = (
-        (RA_1, "The property perfectly fits the user"),
-        (RA_2, "The property doesn't completely fit the user, but the cluster does"),
-        (RA_3, "The property doesn't fit the user, but the cluster does"),
-        (RA_4, "Neither the property nor the cluster fit the user"),
-    )
-    answer = models.CharField(
-        max_length=1,
-        choices=REVIEW_ANSWERS,
-        default=RA_1,
-        verbose_name="Review",
+    happiness_qa = models.CharField(
+        max_length=2,
+        choices=LIKERT_SCALE,
+        verbose_name="I am happy with the properties I have chosen",
         blank=False,
     )
 
-    review = models.ForeignKey(HHUserRecsReview, on_delete=models.CASCADE, related_name="cluster_review")
-    dt = models.DateTimeField(auto_now=True)
+    class Meta:
+        verbose_name = "QA about recommendations"
+        verbose_name_plural = "QAs about recommendations"
+
+
+class RecsReviewSelectedItem(models.Model):
+    review = models.ForeignKey(RecsReview, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item)
+    position = models.IntegerField(
+        verbose_name="Item position", validators=[MinValueValidator(0)]
+    )
 
     class Meta:
-        verbose_name = "Recommended cluster review"
-        ordering = ['-dt']
+        verbose_name = "Selected item for a user"
+        verbose_name_plural = "Selected items for a user"
+        ordering = ['pk']
 
 
 class AbstractUserEvalCase(models.Model):
@@ -128,7 +123,7 @@ class AbstractUserEvalCase(models.Model):
     hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, verbose_name="HH user")
     recs_type = models.CharField(
         max_length=2,
-        choices=HHUserRecsReview.RECS_TYPES,
+        choices=RecsReview.RECS_TYPES,
         verbose_name="Type of recommendations",
         blank=False
     )
@@ -148,9 +143,9 @@ class UserEvalCaseView(AbstractUserEvalCase):
     is_reviewed = models.BooleanField()
 
     def get_absolute_url(self):
-        if self.recs_type == HHUserRecsReview.RT_CLUSTER_BASED:
+        if self.recs_type == RecsReview.RT_CLUSTER_BASED:
             return reverse("main:hhuserclustereval", args=[self.hh_user])
-        elif self.recs_type == HHUserRecsReview.RT_CONTENT_BASED:
+        elif self.recs_type == RecsReview.RT_CONTENT_BASED:
             return reverse("main:hhuseritemeval", args=[self.hh_user])
         raise Exception("Wrong recs_type value: %s" % self.recs_type)
 
