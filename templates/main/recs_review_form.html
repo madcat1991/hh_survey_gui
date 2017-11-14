@@ -37,13 +37,25 @@
                         radio_input.prop("checked", true);
                     }
                     label.append(radio_input);
-                    label.append('<img src="' + item["image_url"] + '">');
+                    var img = $('<img src="' + item["image_url"] + '">');
+                    label.append(img);
+
+                    // making img uncheckable
+                    img.on('click', function (e) {
+                        var input = $(this).prev();
+                        if(input.is(':checked')) {
+                            input.prop("checked", false);
+                        } else {
+                            input.prop("checked", true);
+                        }
+                        return false;
+                    });
 
                     var item_div = $('<div class="item"></div>');
                     item_div.append(label);
                     item_div.append(name);
 
-                    item_container.append(item_div.clone());
+                    item_container.append(item_div);
                 });
 
                 cluster_info.append('<div class="label">Cluster #' + cluster_id + '</div>');
@@ -203,9 +215,40 @@
                 </div>
 
                 <div id="cluster_info"></div>
-                <table class="likert">
-                </table>
-                <div class="label">Would you like to change the most relevant item to another one from the cluster? If yes, pick one from cluster's properties by clicking on it</div>
+
+                <div id="cluster_qa">
+                    <br>
+
+                    <div class="label">Rate the following statements</div>
+                    <table class="likert">
+                        <thead>
+                            <tr>
+                                <th class="statement"></th>
+                                {% for radio in cluster_qa_form.usefulness_qa %}
+                                    <th class="choice">{{ radio.choice_label }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="statement">{{ cluster_qa_form.usefulness_qa.label }}</td>
+                                {% for radio in qa_form.quality_qa %}
+                                    <td class="choice">{{ radio.tag }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="statement">{{ cluster_qa_form.choice_qa.label }}</td>
+                                {% for radio in qa_form.diversity_qa %}
+                                    <td class="choice">{{ radio.tag }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <br>
+
+                    <div class="label">Would you like to change the most relevant item to another one from the cluster? If yes, pick one from cluster's properties by clicking on it</div>
+                </div>
             </div>
 
             <br>
