@@ -204,17 +204,24 @@ def get_cluster_recs_cntx(code):
         # preparing output data
         cntx["items"] = []
         cntx["clusters_data"] = {}
+        rec_iids = set()
         for cl_pos, rec in enumerate(data["recs"]):
             cl_id = rec["bg_id"]
 
+            # cluster items
             cluster_items = [
                 rec_items[prop["propcode"]].as_dict(pos=i_pos, cl_id=cl_id)
                 for i_pos, prop in enumerate(rec["properties"])
             ]
 
-            rec_item_pos = random.randrange(0, len(cluster_items))
-            cntx["items"].append(cluster_items[rec_item_pos])
+            # selecting an item from cluster_items for recommendations
+            # the items from different clusters can intersect
+            relevant_pos = [i for i, obj in enumerate(cluster_items) if obj["id"] not in rec_iids]
+            rec_item = cluster_items[random.choice(relevant_pos)]
+            cntx["items"].append(rec_item)
+            rec_iids.add(rec_item["id"])
 
+            # updating clusters data
             cntx["clusters_data"][cl_id] = {
                 "pos": cl_pos,
                 "descr": describe_booking_cluster(rec["features"]),
@@ -232,6 +239,7 @@ def recs_review_view(request, pk):
         cntx = get_item_recs_cntx(review_obj.hh_user.pk)
     else:
         cntx = get_cluster_recs_cntx(review_obj.hh_user.pk)
+        cntx["clusters_data"] = json.dumps(cntx["clusters_data"])
 
     error_messages = []
     if request.method == 'POST':
@@ -280,5 +288,4 @@ def recs_review_view(request, pk):
     cntx["qa_form"] = qa_form
     cntx["review_obj"] = review_obj
     cntx["error_messages"] = error_messages
-    cntx["clusters_data"] = json.dumps(cntx["clusters_data"])
     return render(request, "main/recs_review_form.html", context=cntx)
