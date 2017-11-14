@@ -113,9 +113,15 @@ class RecsReviewQA(models.Model):
 
 class RecsReviewSelectedItem(models.Model):
     review = models.ForeignKey(RecsReview, on_delete=models.CASCADE, related_name='selected_item')
+
     item = models.ForeignKey(Item)
     position = models.IntegerField(
         verbose_name="Item position", validators=[MinValueValidator(0)]
+    )
+
+    cluster_id = models.IntegerField(null=True, blank=True)
+    cluster_position = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(0)]
     )
 
     def __str__(self):
