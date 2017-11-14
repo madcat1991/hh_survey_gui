@@ -47,16 +47,14 @@ def get_items_booked_by_user(code, n_latest):
         .values('item', 'item__name', 'item__uri', 'item__image_uri') \
         .annotate(max_dt=Max('dt')) \
         .order_by('-max_dt')[:n_latest]
+
     return [
-        {
-            "id": item["item"],
-            "obj": Item(
-                code=item["item"],
-                name=item["item__name"],
-                uri=item["item__uri"],
-                image_uri=item["item__image_uri"]
-            )
-        }
+        Item(
+            code=item["item"],
+            name=item["item__name"],
+            uri=item["item__uri"],
+            image_uri=item["item__image_uri"]
+        ).as_dict()
         for item in items
     ]
 
@@ -178,7 +176,7 @@ def get_item_recs_cntx(code):
         rec_iids = [rec["propcode"] for rec in data["recs"]]
         rec_items = {obj.pk: obj for obj in Item.objects.filter(pk__in=rec_iids)}
         cntx["items"] = [
-            {"id": iid, "obj": rec_items[iid], "pos": i_pos}
+            rec_items[iid].as_dict(pos=i_pos)
             for i_pos, iid in enumerate(rec_iids)
         ]
     return cntx
@@ -207,8 +205,9 @@ def get_cluster_recs_cntx(code):
         cntx["items"] = []
         for cl_pos, rec in enumerate(data["recs"]):
             cl_id = rec["bg_id"]
+
             cluster_items = [
-                {"id": prop["propcode"], "obj": rec_items[prop["propcode"]], "pos": i_pos, "cl_id": cl_id}
+                rec_items[prop["propcode"]].as_dict(pos=i_pos, cl_id=cl_id)
                 for i_pos, prop in enumerate(rec["properties"])
             ]
 

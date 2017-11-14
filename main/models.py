@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -29,6 +30,22 @@ class Item(models.Model):
     uri = models.CharField(max_length=200, null=True)
     image_uri = models.CharField(max_length=200, null=True)
     name = models.CharField(max_length=200, null=True)
+
+    def url(self):
+        return settings.HH_URL + self.uri if self.uri is not None else None
+
+    def image_url(self):
+        return settings.HH_IMAGE_URL + self.image_uri if self.image_uri is not None else settings.HH_DEFAULT_IMAGE_URL
+
+    def as_dict(self, **extend):
+        item = {
+            "id": self.code,
+            "name": self.name,
+            "url": self.url(),
+            "image_url": self.image_url(),
+        }
+        item.update(extend)
+        return item
 
     def __str__(self):
         return self.code
@@ -68,6 +85,9 @@ class RecsReview(models.Model):
 
     dt = models.DateTimeField(auto_now=True)
     qa = models.ForeignKey("main.RecsReviewQA", on_delete=models.SET_NULL, null=True, blank=True)
+
+    def is_cl_recs_review(self):
+        return self.recs_type == self.RT_CLUSTER_BASED
 
     def __str__(self):
         return "%s review of %s's %s recs" % (self.reviewer, self.hh_user, self.recs_type)

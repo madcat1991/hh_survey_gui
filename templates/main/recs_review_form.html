@@ -43,11 +43,11 @@
         <div class="items_container">
         {% for item in last5_items %}
             <div class="item">
-                <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
+                <img src="{{ item.image_url }}">
                 {% if item.obj.uri %}
-                    <a href="{{ item.obj.uri|hh_uri_to_url }}" target="_blank">{{ item.obj.name }}</a>
+                    <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
                 {% else %}
-                    {{ item.obj.name }}
+                    {{ item.name }}
                 {% endif %}
             </div>
         {% endfor %}
@@ -72,13 +72,13 @@
                 <div class="item">
                     <label>
                         <input type="checkbox" name="items" value="{{ item.id }}" {% if item.selected %}checked{% endif %}/>
-                        <img src="{{ item.obj.image_uri|hh_image_uri_to_url }}">
+                        <img src="{{ item.image_url }}">
                     </label>
 
-                    {% if item.obj.uri %}
-                        <a href="{{ item.obj.uri|hh_uri_to_url }}" target="_blank">{{ item.obj.name }}</a>
+                    {% if item.url %}
+                        <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
                     {% else %}
-                        {{ item.obj.name }}
+                        {{ item.name }}
                     {% endif %}
                 </div>
             {% endfor %}
@@ -114,7 +114,7 @@
 
             <br>
 
-            <div class="label">Mark the items and rate the following statements</div>
+            <div class="label">Mark the items above and rate the following statements</div>
             <table class="likert">
                 <thead>
                     <tr>
