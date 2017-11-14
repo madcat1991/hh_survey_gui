@@ -15,7 +15,7 @@ class RecsReviewQAAdmin(admin.ModelAdmin):
 
 
 class RecsReviewSelectedItemAdmin(admin.ModelAdmin):
-    list_display = ('review', 'item', 'position')
+    list_display = ('review', 'item', 'position', "cluster_id", "cluster_position")
 
 
 admin.site.register(HHUser, HHUserAdmin)

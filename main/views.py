@@ -1,3 +1,5 @@
+import random
+
 import requests
 
 from django.conf import settings
@@ -57,46 +59,6 @@ def get_items_booked_by_user(code, n_latest):
         }
         for item in items
     ]
-
-
-def get_cluster_recs_cntx(code):
-    req = requests.get(
-        settings.API_CLUSTER_RECS_URL,
-        params={"uid": code, "top": TOP_CLUSTER_RECS, "top_items": TOP_ITEMS_PER_CLUSTER}
-    )
-    data = req.json()["result"]
-
-    cntx = {}
-    if data:
-        cntx["has_recs"] = True
-
-        # user part
-        cl_id, cl_descr = list(data["user_cluster"].items())[0]
-        cntx["cluster_id"] = cl_id
-        cntx["cluster_descr"] = cl_descr
-        cntx["descr"] = describe_user(data["user"])
-        cntx["bookings_summary"] = data["prev_bookings_summary"]
-
-        # collecting all the data about items from different clusters
-        recommended_items = set([prop["propcode"] for rec in data["recs"] for prop in rec["properties"]])
-        recommended_items = {obj.pk: obj for obj in Item.objects.filter(pk__in=recommended_items)}
-
-        # preparing output data describing clusters
-        cntx["clusters"] = []
-        for rec in data["recs"]:
-            cluster_items = [
-                {"id": prop["propcode"], "obj": recommended_items[prop["propcode"]]}
-                for prop in rec["properties"]
-            ]
-
-            cntx["clusters"].append({
-                "id": rec["bg_id"],
-                "descr": describe_booking_cluster(rec["features"]),
-                "items": cluster_items
-            })
-    else:
-        cntx["has_recs"] = False
-    return cntx
 
 
 @login_required
@@ -209,17 +171,55 @@ def get_item_recs_cntx(code):
 
     cntx = {}
     if data:
-        cntx["has_recs"] = True
-
         # user part
         cntx["descr"] = describe_user(data["user"])
 
         # preparing output in the right order
         rec_iids = [rec["propcode"] for rec in data["recs"]]
-        rec_item_objs = {obj.pk: obj for obj in Item.objects.filter(pk__in=rec_iids)}
-        cntx["items"] = [{"id": iid, "obj": rec_item_objs[iid]} for iid in rec_iids]
-    else:
-        cntx["has_recs"] = False
+        rec_items = {obj.pk: obj for obj in Item.objects.filter(pk__in=rec_iids)}
+        cntx["items"] = [
+            {"id": iid, "obj": rec_items[iid], "pos": i_pos}
+            for i_pos, iid in enumerate(rec_iids)
+        ]
+    return cntx
+
+
+def get_cluster_recs_cntx(code):
+    req = requests.get(
+        settings.API_CLUSTER_RECS_URL,
+        params={"uid": code, "top": TOP_CLUSTER_RECS, "top_items": TOP_ITEMS_PER_CLUSTER}
+    )
+    data = req.json()["result"]
+
+    cntx = {}
+    if data:
+        # user part
+        cntx["descr"] = describe_user(data["user"])
+
+        # collecting all the data about items from different clusters
+        rec_items = set([prop["propcode"] for rec in data["recs"] for prop in rec["properties"]])
+        rec_items = {obj.pk: obj for obj in Item.objects.filter(pk__in=rec_items)}
+
+        random.seed(code)  # making selection user-specific
+
+        # preparing output data
+        cntx["clusters"] = {}
+        cntx["items"] = []
+        for cl_pos, rec in enumerate(data["recs"]):
+            cl_id = rec["bg_id"]
+            cluster_items = [
+                {"id": prop["propcode"], "obj": rec_items[prop["propcode"]], "pos": i_pos, "cl_id": cl_id}
+                for i_pos, prop in enumerate(rec["properties"])
+            ]
+
+            rec_item_pos = random.randrange(0, len(cluster_items))
+            cntx["items"].append(cluster_items[rec_item_pos])
+
+            cntx["clusters"][cl_id] = {
+                "pos": cl_pos,
+                "descr": describe_booking_cluster(rec["features"]),
+                "items": cluster_items
+            }
     return cntx
 
 
@@ -238,20 +238,25 @@ def recs_review_view(request, pk):
         qa_form = RecsReviewQAForm(request.POST, instance=review_obj.qa)
 
         # selected items
-        iids_and_positions = []
+        selected_items = []
         selected_iids = set(request.POST.getlist("items", []))
         for i_pos, i_obj in enumerate(cntx["items"]):
             if i_obj["id"] in selected_iids:
-                iids_and_positions.append((i_obj["id"], i_pos))
+                selected_items.append(i_obj)
 
-        if len(iids_and_positions) > 0:
+        if len(selected_items) > 0:
             if qa_form.is_valid():
                 # delete old items
                 review_obj.selected_item.all().delete()
 
                 # create news
-                for iid, i_pos in iids_and_positions:
-                    RecsReviewSelectedItem(review=review_obj, item_id=iid, position=i_pos).save()
+                for i_obj in selected_items:
+                    obj = RecsReviewSelectedItem(review=review_obj, item_id=i_obj["id"], position=i_obj["pos"])
+                    if review_obj.recs_type == RecsReview.RT_CLUSTER_BASED:
+                        cl = cntx["clusters"][i_obj["cl_id"]]
+                        obj.cluster_id = i_obj["cl_id"]
+                        obj.cluster_position = cl["pos"]
+                    obj.save()
 
                 # save QA
                 qa_instance = qa_form.save()
