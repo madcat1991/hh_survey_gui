@@ -1,5 +1,5 @@
 from django.contrib import admin
-from main.models import HHUser, RecsReview, RecsReviewQA, RecsReviewSelectedItem
+from main.models import HHUser, RecsReview, RecsReviewQA, RecsReviewSelectedItem, ClusterRecsReviewQA
 
 
 class HHUserAdmin(admin.ModelAdmin):
@@ -14,6 +14,10 @@ class RecsReviewQAAdmin(admin.ModelAdmin):
     list_display = ('pk', 'quality_qa', 'diversity_qa', 'easiness_qa', 'happiness_qa')
 
 
+class ClusterRecsReviewQAAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'usefulness_qa', 'choice_qa', 'cluster_id', 'cluster_position', 'item', 'position')
+
+
 class RecsReviewSelectedItemAdmin(admin.ModelAdmin):
     list_display = ('review', 'item', 'position', "cluster_id", "cluster_position")
 
@@ -21,4 +25,5 @@ class RecsReviewSelectedItemAdmin(admin.ModelAdmin):
 admin.site.register(HHUser, HHUserAdmin)
 admin.site.register(RecsReview, RecsReviewAdmin)
 admin.site.register(RecsReviewQA, RecsReviewQAAdmin)
+admin.site.register(ClusterRecsReviewQA, ClusterRecsReviewQAAdmin)
 admin.site.register(RecsReviewSelectedItem, RecsReviewSelectedItemAdmin)

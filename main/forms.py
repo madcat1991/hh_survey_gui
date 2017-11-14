@@ -1,6 +1,6 @@
 from django.forms import ModelForm, RadioSelect
 
-from main.models import RecsReviewQA
+from main.models import RecsReviewQA, ClusterRecsReviewQA
 
 
 class RecsReviewQAForm(ModelForm):
@@ -12,4 +12,14 @@ class RecsReviewQAForm(ModelForm):
             'diversity_qa': RadioSelect(),
             'easiness_qa': RadioSelect(),
             'happiness_qa': RadioSelect(),
+        }
+
+
+class ClusterRecsReviewQAForm(ModelForm):
+    class Meta:
+        model = ClusterRecsReviewQA
+        fields = ["usefulness_qa", "choice_qa"]
+        widgets = {
+            'usefulness_qa': RadioSelect(),
+            'choice_qa': RadioSelect(),
         }

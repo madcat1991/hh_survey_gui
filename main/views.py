@@ -15,7 +15,7 @@ from django_tables2 import SingleTableView
 from main.describer.booking import describe_booking_cluster
 from main.describer.user import describe_user
 from main.filters import RecsReviewFilter
-from main.forms import RecsReviewQAForm
+from main.forms import RecsReviewQAForm, ClusterRecsReviewQAForm
 from main.models import Booking, Item, RecsReview, RecsReviewSelectedItem
 from main.table import RecsReviewTable
 
@@ -244,6 +244,7 @@ def recs_review_view(request, pk):
     error_messages = []
     if request.method == 'POST':
         qa_form = RecsReviewQAForm(request.POST, instance=review_obj.qa)
+        cluster_qa_form = None  # TODO finish it
 
         # selected items
         selected_items = []
@@ -278,14 +279,16 @@ def recs_review_view(request, pk):
             error_messages.append("Please select at least one property")
     else:
         qa_form = RecsReviewQAForm(instance=review_obj.qa)
+        cluster_qa_form = ClusterRecsReviewQAForm(instance=review_obj.cluster_qa)
         selected_iids = {obj.item_id for obj in review_obj.selected_item.all()}
 
     for i_obj in cntx["items"]:
         if i_obj["id"] in selected_iids:
             i_obj["selected"] = True
 
-    cntx["last5_items"] = get_items_booked_by_user(review_obj.hh_user.pk, TOP_ITEMS_PER_CLUSTER)
     cntx["qa_form"] = qa_form
+    cntx["cluster_qa_form"] = cluster_qa_form
+    cntx["last5_items"] = get_items_booked_by_user(review_obj.hh_user.pk, TOP_ITEMS_PER_CLUSTER)
     cntx["review_obj"] = review_obj
     cntx["error_messages"] = error_messages
     return render(request, "main/recs_review_form.html", context=cntx)

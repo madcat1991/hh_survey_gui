@@ -84,7 +84,9 @@ class RecsReview(models.Model):
     )
 
     dt = models.DateTimeField(auto_now=True)
+
     qa = models.ForeignKey("main.RecsReviewQA", on_delete=models.SET_NULL, null=True, blank=True)
+    cluster_qa = models.ForeignKey("main.ClusterRecsReviewQA", on_delete=models.SET_NULL, null=True, blank=True)
 
     def is_cl_recs_review(self):
         return self.recs_type == self.RT_CLUSTER_BASED
@@ -129,6 +131,36 @@ class RecsReviewQA(models.Model):
     class Meta:
         verbose_name = "QA about recommendations"
         verbose_name_plural = "QAs about recommendations"
+
+
+class ClusterRecsReviewQA(models.Model):
+    cluster_id = models.IntegerField()
+    cluster_position = models.IntegerField(validators=[MinValueValidator(0)])
+
+    item = models.ForeignKey(Item, null=True, blank=True,)
+    position = models.IntegerField(
+        verbose_name="Item position", validators=[MinValueValidator(0)], null=True, blank=True,
+    )
+
+    usefulness_qa = models.CharField(
+        max_length=2,
+        choices=LIKERT_SCALE,
+        verbose_name="This additional information useful for the choice of the most relevant property",
+        default=None
+    )
+    choice_qa = models.CharField(
+        max_length=2,
+        choices=LIKERT_SCALE,
+        verbose_name="This additional information makes the choice of the most relevant property difficult",
+        default=None
+    )
+
+    def __str__(self):
+        return "%s" % self.pk
+
+    class Meta:
+        verbose_name = "Cluster QA"
+        verbose_name_plural = "Cluster QAs"
 
 
 class RecsReviewSelectedItem(models.Model):
