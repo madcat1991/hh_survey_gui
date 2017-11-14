@@ -92,3 +92,30 @@ table.likert {
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
 }
+
+
+div.cluster_part {
+    border: solid thin #DDD;
+    padding: 10px;
+    margin: 7px 0;
+    border-radius: 18px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+.cluster_part h3 {
+    margin: 0 0 20px;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #DDD;
+    margin: 1em 0;
+    padding: 0;
+}
+
+div.cluster_descr {
+    margin: 10px 0;
+}

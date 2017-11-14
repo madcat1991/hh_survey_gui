@@ -1,3 +1,4 @@
+import json
 import random
 
 import requests
@@ -201,8 +202,8 @@ def get_cluster_recs_cntx(code):
         random.seed(code)  # making selection user-specific
 
         # preparing output data
-        cntx["clusters"] = {}
         cntx["items"] = []
+        cntx["clusters_data"] = {}
         for cl_pos, rec in enumerate(data["recs"]):
             cl_id = rec["bg_id"]
 
@@ -214,7 +215,7 @@ def get_cluster_recs_cntx(code):
             rec_item_pos = random.randrange(0, len(cluster_items))
             cntx["items"].append(cluster_items[rec_item_pos])
 
-            cntx["clusters"][cl_id] = {
+            cntx["clusters_data"][cl_id] = {
                 "pos": cl_pos,
                 "descr": describe_booking_cluster(rec["features"]),
                 "items": cluster_items
@@ -279,4 +280,5 @@ def recs_review_view(request, pk):
     cntx["qa_form"] = qa_form
     cntx["review_obj"] = review_obj
     cntx["error_messages"] = error_messages
+    cntx["clusters_data"] = json.dumps(cntx["clusters_data"])
     return render(request, "main/recs_review_form.html", context=cntx)

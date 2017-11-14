@@ -7,6 +7,8 @@
 {% block head %}
     <link rel="stylesheet" href="{% static 'main/css/main_form.css' %}" />
     <script>
+        var clusters_data = {{ clusters_data | safe }};
+
         $(document).ready(function() {
             $('.info_msg').fadeOut(3000, function(){
                 $(this).remove();
@@ -14,6 +16,42 @@
 
             $(".accordion").click(function(){
                 $(this).next(".panel").toggleClass("table");
+            });
+
+            $('input[name="clusters"]').on('change', function () {
+                var cluster_info = $('<div id="cluster_info"><hr></div>');
+
+                var cluster_id = $(this).val();
+                var item_container = $('<div class="items_container"></div>');
+                var cl_data = clusters_data[cluster_id];
+
+                cl_data["items"].forEach(function (item) {
+                    var name = item["name"];
+                    if (item["url"] !== null) {
+                        name = $('<a href="' + item["url"] + '" target="_blank">' + name + '</a>');
+                    }
+
+                    var label = $("<label></label>");
+                    var radio_input = $('<input type="radio" name="cluster_items" value="' + item["id"] + '"/>');
+                    if ("checked" in item) {
+                        radio_input.prop("checked", true);
+                    }
+                    label.append(radio_input);
+                    label.append('<img src="' + item["image_url"] + '">');
+
+                    var item_div = $('<div class="item"></div>');
+                    item_div.append(label);
+                    item_div.append(name);
+
+                    item_container.append(item_div.clone());
+                });
+
+                cluster_info.append('<div class="label">Cluster #' + cluster_id + '</div>');
+                cluster_info.append('<div class="cluster_descr">' + cl_data["descr"] + '</div>');
+                cluster_info.append(item_container);
+                $("#cluster_info").fadeOut(300, function () {
+                    $("#cluster_info").html(cluster_info).fadeIn(300);
+                });
             });
         });
     </script>
@@ -141,6 +179,37 @@
             </table>
 
             <br>
+
+            {% if review_obj.is_cl_recs_review %}
+            <div class="cluster_part">
+                <h3>Cluster related part</h3>
+
+                <div class="label">Select a property below which is in your opinion is the most relevant for the user</div>
+                <div class="items_container">
+                {% for item in items %}
+                    <div class="item">
+                        <label>
+                            <input type="radio" name="clusters" value="{{ item.cl_id }}" {% if item.most_relevant %}checked{% endif %}/>
+                            <img src="{{ item.image_url }}">
+                        </label>
+
+                        {% if item.url %}
+                            <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
+                        {% else %}
+                            {{ item.name }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </div>
+
+                <div id="cluster_info"></div>
+                <table class="likert">
+                </table>
+                <div class="label">Would you like to change the most relevant item to another one from the cluster? If yes, pick one from cluster's properties by clicking on it</div>
+            </div>
+
+            <br>
+            {% endif %}
 
             <div id="submit_btn_container">
                 <input class="btn" type="submit" value="Finish and submit review"/>
