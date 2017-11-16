@@ -7,4 +7,4 @@ BOOKING_CSV_PATH = os.path.join(API_DATA_DIR, "booking.csv")
 ITEM_CSV_PATH = os.path.join(API_DATA_DIR, "property.csv")
 
 ALLOWED_HOSTS = ['46.18.25.101']
-DEBUG = True
+DEBUG = False
