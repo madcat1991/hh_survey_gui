@@ -4,7 +4,7 @@ from main.models import RecsReview
 
 
 class RecsReviewFilter(django_filters.FilterSet):
-    hh_user__pk = django_filters.CharFilter(label='HH user', lookup_expr='icontains')
+    hh_user__pk = django_filters.CharFilter(label='Customer ID', lookup_expr='icontains')
     is_reviewed = django_filters.BooleanFilter(label='Is reviewed')
 
     class Meta:

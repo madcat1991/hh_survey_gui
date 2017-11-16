@@ -3,7 +3,7 @@
 {% load static %}
 {% load main_extras %}
 
-{% block title %}User {{ code }}{% endblock %}
+{% block title %}Customer {{ code }}{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'main/css/main_form.css' %}" />
     <script>
@@ -32,11 +32,11 @@
         <div class="message error_msg">{{ err_msg }}</div>
     {% endfor %}
 
-    <!-- user info -->
-    <h2>User {{ review_obj.hh_user }}</h2>
+    <!-- customer info -->
+    <h2>Customer {{ review_obj.hh_user }}</h2>
     <div class="left">
     {% if last5_items %}
-        <h2>Last booked items:</h2>
+        <h2>Recently booked properties:</h2>
 
         <div class="items_container">
         {% for item in last5_items %}
@@ -84,7 +84,7 @@
 
             <br>
 
-            <div class="label">Rate the following statements</div>
+            <div class="label">Taking into account that the recommendations are built for the customer presented on the left, rate the following statements.</div>
             <table class="likert">
                 <thead>
                     <tr>
@@ -112,7 +112,7 @@
 
             <br>
 
-            <div class="label">Mark the items above and rate the following statements</div>
+            <div class="label">Select the most relevant recommended property for the customer (click on the image) and rate the following statements.</div>
             <table class="likert">
                 <thead>
                     <tr>
@@ -147,7 +147,7 @@
 
                 $(document).ready(function() {
                     $('input[name="items"]').on('change', function () {
-                        var cluster_info = $('<div id="cluster_info"><hr></div>');
+                        var cluster_info = $('<div id="cluster_info"></div>');
 
                         var item_id = $(this).val();
                         var item_container = $('<div class="items_container"></div>');
@@ -187,9 +187,8 @@
                             item_container.append(item_div);
                         });
 
-                        cluster_info.append('<div class="label">Cluster #' + cl_data["id"] + '</div>');
-                        cluster_info.append('<div class="cluster_descr">' + cl_data["descr"] + '</div>');
                         cluster_info.append(item_container);
+                        cluster_info.append('<div class="cluster_descr">' + cl_data["descr"] + '</div>');
                         $("#cluster_info").fadeOut(300, function () {
                             $("#cluster_info").html(cluster_info).fadeIn(300);
                         });
@@ -207,14 +206,14 @@
             </script>
 
             <div class="cluster_part">
-                <h3>Cluster related part</h3>
+                <h3>People that book the item that you've selected also book the following ones.</h3>
 
                 <div id="cluster_info"></div>
 
                 <div id="cluster_qa">
                     <br>
 
-                    <div class="label">Rate the following statements</div>
+                    <div class="label">Rate the following statements.</div>
                     <table class="likert">
                         <thead>
                             <tr>
@@ -242,7 +241,7 @@
 
                     <br>
 
-                    <div class="label">Would you like to change the most relevant item to another one from the cluster? If yes, click on it</div>
+                    <div class="label">Do you want to select for your customer another property from this group? If yes, click on it.</div>
                 </div>
             </div>
 

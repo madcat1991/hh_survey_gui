@@ -67,7 +67,7 @@ class RecsReview(models.Model):
     N_REVIEW_PER_USER = 60
 
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
-    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, verbose_name="HH user")
+    hh_user = models.ForeignKey(HHUser, on_delete=models.CASCADE, verbose_name="Customer")
 
     RT_CONTENT_BASED = "cb"
     RT_CLUSTER_BASED = "cl"
@@ -125,13 +125,13 @@ class RecsReviewQA(models.Model):
     easiness_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
-        verbose_name="Selecting the best properties was easy",
+        verbose_name="Selecting the best property was easy",
         default=None
     )
     happiness_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
-        verbose_name="I am happy with the properties I have chosen",
+        verbose_name="I am happy with the property I have chosen",
         default=None
     )
 
@@ -152,13 +152,13 @@ class ClusterRecsReviewQA(models.Model):
     usefulness_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
-        verbose_name="This additional information useful for the choice of the most relevant property",
+        verbose_name="Looking at these additional properties is useful for choosing the most relevant property",
         default=None
     )
     choice_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
-        verbose_name="This additional information makes the choice of the most relevant property difficult",
+        verbose_name="Looking at these additional properties make easier to choose the most relevant property",
         default=None
     )
 

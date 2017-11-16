@@ -3,7 +3,7 @@
 {% load render_table from django_tables2 %}
 {% load static %}
 
-{% block title %}Users to evaluate{% endblock %}
+{% block title %}Customers to evaluate{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
     <link rel="stylesheet" href="{% static 'main/css/main_list.css' %}" />
@@ -24,7 +24,7 @@
 {% block content %}
     <h1>Recommendations to review</h1>
 
-    <p>Click on a user ID to begin the evaluation of the user's recommendations.</p>
+    <p>Click on a customer ID to begin the evaluation of the customer's recommendations.</p>
 
     <button type="button" id="filters" class="accordion btn">Filters</button>
     <div class="panel">

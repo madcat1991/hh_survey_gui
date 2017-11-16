@@ -1,7 +1,7 @@
 """
 A pattern to create a user description:
 
-The user belongs to {oac_groupdesc} OAC group(s).
+The customer belongs to {oac_groupdesc} OAC group(s).
 She usually books {is_detached} {avg_spend_per_head} properties with average
 rating {stars} stars for the {breakpoint} breakpoint(s).
 The average booking duration is {n_booked_days} days.
@@ -34,7 +34,7 @@ n_booked_days_features = {
 
 
 def first_sentence(oac_groups):
-    sentence = "The user belongs to " + concat_using_comma_and_and(oac_groups)
+    sentence = "The customer belongs to " + concat_using_comma_and_and(oac_groups)
     sentence += " OAC groups." if len(oac_groups) > 1 else " OAC group."
     return sentence
 
@@ -78,7 +78,7 @@ def fourth_sentence(general_conditions, accessibility, contents):
 
 
 def fifth_sentence(drivetime):
-    sentence = "The user could reach the properties by car in %s hours." % select_the_best(drivetime)
+    sentence = "The customer could reach the properties by car in %s hours." % select_the_best(drivetime)
     return sentence
 
 
