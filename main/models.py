@@ -100,6 +100,16 @@ class RecsReview(models.Model):
 
 
 class RecsReviewQA(models.Model):
+    item = models.ForeignKey(Item)
+    position = models.IntegerField(
+        verbose_name="Item position", validators=[MinValueValidator(0)]
+    )
+
+    cluster_id = models.IntegerField(null=True, blank=True)
+    cluster_position = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(0)]
+    )
+
     quality_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
@@ -134,12 +144,9 @@ class RecsReviewQA(models.Model):
 
 
 class ClusterRecsReviewQA(models.Model):
-    cluster_id = models.IntegerField()
-    cluster_position = models.IntegerField(validators=[MinValueValidator(0)])
-
-    item = models.ForeignKey(Item, null=True, blank=True,)
+    item = models.ForeignKey(Item, verbose_name="New item")
     position = models.IntegerField(
-        verbose_name="Item position", validators=[MinValueValidator(0)], null=True, blank=True,
+        verbose_name="New position", validators=[MinValueValidator(0)]
     )
 
     usefulness_qa = models.CharField(
@@ -161,25 +168,3 @@ class ClusterRecsReviewQA(models.Model):
     class Meta:
         verbose_name = "Cluster QA"
         verbose_name_plural = "Cluster QAs"
-
-
-class RecsReviewSelectedItem(models.Model):
-    review = models.ForeignKey(RecsReview, on_delete=models.CASCADE, related_name='selected_item')
-
-    item = models.ForeignKey(Item)
-    position = models.IntegerField(
-        verbose_name="Item position", validators=[MinValueValidator(0)]
-    )
-
-    cluster_id = models.IntegerField(null=True, blank=True)
-    cluster_position = models.IntegerField(
-        null=True, blank=True, validators=[MinValueValidator(0)]
-    )
-
-    def __str__(self):
-        return "%s" % self.pk
-
-    class Meta:
-        verbose_name = "Selected item for a user"
-        verbose_name_plural = "Selected items for a user"
-        ordering = ['pk']

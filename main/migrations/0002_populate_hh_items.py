@@ -39,31 +39,30 @@ def get_dumped_hh_items():
     return dumped_items
 
 
-def get_image_uri(item):
-    url = settings.HH_URL + item.uri
-    req = requests.get(url)
+def extend_existing_items_with_image_uris(existing_items):
+    for code, d in existing_items.items():
+        url = settings.HH_URL + d["uri"]
+        print(url)
+        req = requests.get(url)
 
-    soup = BeautifulSoup(req.text, "html.parser")
-    imgs = soup.select("div#carousel img['data-index'='1']")
+        soup = BeautifulSoup(req.text, "html.parser")
+        imgs = soup.select("div#carousel img['data-index'='1']")
 
-    image_uri = None
-    if len(imgs) > 0:
-        img_url = imgs[0].attrs['data-full-url']
-        image_uri = img_url.replace(settings.HH_IMAGE_URL, "").strip()
-    return image_uri
+        if len(imgs) > 0:
+            img_url = imgs[0].attrs['data-full-url']
+            d["image_uri"] = img_url.replace(settings.HH_IMAGE_URL, "").strip()
+    return existing_items
 
 
 def populate_hh_items(apps, schema_editor):
     existing_items = get_existing_hh_items()
+    extend_existing_items_with_image_uris(existing_items)
     dumped_items = get_dumped_hh_items()
 
     Item = apps.get_model('main', 'Item')
-
     for iid, name in dumped_items.items():
         d = existing_items.get(iid, {})
-        item = Item(code=iid, uri=d.get("uri"), name=d.get("name", name))
-        if item.uri is not None:
-            item.image_uri = get_image_uri(item)
+        item = Item(code=iid, uri=d.get("uri"), name=d.get("name", name), image_uri=d.get("image_uri"))
         item.save()
 
 
