@@ -101,6 +101,7 @@ div.cluster_part {
     border-radius: 18px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    display: none;
 }
 
 .cluster_part h3 {

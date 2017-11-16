@@ -16,7 +16,7 @@ from main.describer.booking import describe_booking_cluster
 from main.describer.user import describe_user
 from main.filters import RecsReviewFilter
 from main.forms import RecsReviewQAForm, ClusterRecsReviewQAForm
-from main.models import Booking, Item, RecsReview, RecsReviewSelectedItem
+from main.models import Booking, Item, RecsReview
 from main.table import RecsReviewTable
 
 
@@ -58,107 +58,6 @@ def get_items_booked_by_user(code, n_latest):
         ).as_dict()
         for item in items
     ]
-
-
-@login_required
-def eval_hh_user_cluster_recs_view(request, code):
-    # WARNING!!! we assume that recommendations doesn't change over time!!!
-    cntx = get_cluster_recs_cntx(code)
-    cntx["code"] = code
-    cntx["last5_items"] = get_items_booked_by_user(code, TOP_ITEMS_PER_CLUSTER)
-    # cntx["cluster_review_answers"] = RecsClusterReview.REVIEW_ANSWERS
-    # cntx["review_answers"] = RecsReview.REVIEW_ANSWERS
-
-    error_messages = []
-    if cntx["has_recs"]:
-        if request.method == 'POST':
-            # user review answer
-            user_answer = request.POST.get("user_review")
-            if user_answer:
-                cntx["user_answer"] = user_answer
-            else:
-                error_messages.append(
-                    "Fill the evaluation of the items selected for the user"
-                )
-
-            # cluster evaluation
-            cluster_review_data = []
-            for cl_pos, cl_obj in enumerate(cntx["clusters"]):
-                cl_id = cl_obj["id"]
-
-                # cluster review
-                cl_answer = request.POST.get("cluster_%s_reviews" % cl_id)
-                if cl_answer:
-                    cl_obj["answer"] = cl_answer
-                else:
-                    error_messages.append(
-                        "Fill the evaluation of the item selected for the cluster #%s" % cl_id
-                    )
-
-                # selected item
-                item_id = item_pos = None
-                selected_item = request.POST.get("cluster_%s_items" % cl_id)
-                if selected_item:
-                    selected_item = selected_item.replace("item_", "")
-                    for i_pos, i_obj in enumerate(cl_obj["items"]):
-                        if i_obj["id"] == selected_item:
-                            item_id, item_pos = selected_item, i_pos
-                            i_obj["selected"] = True
-                            break
-                    else:
-                        error_messages.append(
-                            "Select existing item for the cluster #%s" % cl_id
-                        )
-                else:
-                    error_messages.append(
-                        "Select an item for the cluster #%s" % cl_id
-                    )
-
-                # data to create/update cluster review objects
-                cluster_review_data.append(
-                    (cl_id, cl_pos, {"item_id": item_id, "item_pos": item_pos, "answer": cl_answer})
-                )
-
-            if not error_messages:
-                r_obj, is_created = RecsReview.objects.update_or_create(
-                    {"answer": user_answer}, reviewer=request.user, hh_user_id=code,
-                    recs_type=RecsReview.RT_CLUSTER_BASED
-                )
-
-                # for cl_id, cl_pos, cl_dict in cluster_review_data:
-                #     RecsClusterReview.objects.update_or_create(
-                #         cl_dict, review=r_obj, cluster_id=cl_id, cluster_pos=cl_pos
-                #     )
-
-                cntx["info_message"] = "The review has been successfully submitted"
-        else:
-            try:
-                recs_review_obj = RecsReview.objects.get(
-                    reviewer=request.user, hh_user__pk=code,
-                    recs_type=RecsReview.RT_CLUSTER_BASED
-                )
-            except RecsReview.DoesNotExist:
-                recs_review_obj = None
-
-            if recs_review_obj is not None:
-                cntx["user_answer"] = recs_review_obj.answer
-
-                cluster_reviews = {
-                    obj.cluster_id: (obj.item_id, obj.answer)
-                    for obj in recs_review_obj.cluster_review.all()
-                }
-
-                # populating selections within a cluster
-                for cl_obj in cntx["clusters"]:
-                    item_id, answer = cluster_reviews[cl_obj["id"]]
-                    cl_obj["answer"] = answer
-                    for i_obj in cl_obj["items"]:
-                        if item_id == i_obj["id"]:
-                            i_obj["selected"] = True
-                            break
-
-    cntx["error_messages"] = error_messages
-    return render(request, "main/hhuser_cluster_recs_eval.html", context=cntx)
 
 
 def get_item_recs_cntx(code):
@@ -203,30 +102,32 @@ def get_cluster_recs_cntx(code):
 
         # preparing output data
         cntx["items"] = []
-        cntx["clusters_data"] = {}
-        rec_iids = set()
+        rec_iid_cluster = {}
         for cl_pos, rec in enumerate(data["recs"]):
             cl_id = rec["bg_id"]
 
             # cluster items
             cluster_items = [
-                rec_items[prop["propcode"]].as_dict(pos=i_pos, cl_id=cl_id)
+                rec_items[prop["propcode"]].as_dict(pos=i_pos)
                 for i_pos, prop in enumerate(rec["properties"])
             ]
 
             # selecting an item from cluster_items for recommendations
-            # the items from different clusters can intersect
-            relevant_pos = [i for i, obj in enumerate(cluster_items) if obj["id"] not in rec_iids]
+            # items from different clusters can intersect
+            relevant_pos = [i for i, obj in enumerate(cluster_items) if obj["id"] not in rec_iid_cluster]
             rec_item = cluster_items[random.choice(relevant_pos)]
             cntx["items"].append(rec_item)
-            rec_iids.add(rec_item["id"])
 
-            # updating clusters data
-            cntx["clusters_data"][cl_id] = {
+            # collecting clusters data for each recommended item
+            rec_iid = rec_item["id"]
+            rec_iid_cluster[rec_iid] = {
+                "id": cl_id,
                 "pos": cl_pos,
                 "descr": describe_booking_cluster(rec["features"]),
                 "items": cluster_items
             }
+
+        cntx["rec_iid_cluster"] = rec_iid_cluster
     return cntx
 
 
@@ -239,53 +140,76 @@ def recs_review_view(request, pk):
         cntx = get_item_recs_cntx(review_obj.hh_user.pk)
     else:
         cntx = get_cluster_recs_cntx(review_obj.hh_user.pk)
-        cntx["clusters_data"] = json.dumps(cntx["clusters_data"])
+
+    def _get_item_obj_from_items(iid, item_objs):
+        for i_obj in item_objs:
+            if i_obj["id"] == iid:
+                return i_obj
+        return None
 
     error_messages = []
     if request.method == 'POST':
         qa_form = RecsReviewQAForm(request.POST, instance=review_obj.qa)
-        cluster_qa_form = None  # TODO finish it
+        if not qa_form.is_valid():
+            error_messages.append("Failed to save the items QA form, please contact the administrator")
 
-        # selected items
-        selected_items = []
-        selected_iids = set(request.POST.getlist("items", []))
-        for i_pos, i_obj in enumerate(cntx["items"]):
-            if i_obj["id"] in selected_iids:
-                selected_items.append(i_obj)
+        cluster_qa_form = ClusterRecsReviewQAForm(request.POST, instance=review_obj.cluster_qa)
+        if review_obj.is_cl_recs_review() and not cluster_qa_form.is_valid():
+            error_messages.append("Failed to save the cluster QA form, please contact the administrator")
 
-        if len(selected_items) > 0:
-            if qa_form.is_valid():
-                # delete old items
-                review_obj.selected_item.all().delete()
+        # selected recommended item
+        main_item = _get_item_obj_from_items(request.POST.get("items"), cntx["items"])
+        if main_item is None:
+            error_messages.append("Please select a property")
 
-                # create news
-                for i_obj in selected_items:
-                    obj = RecsReviewSelectedItem(review=review_obj, item_id=i_obj["id"], position=i_obj["pos"])
-                    if review_obj.recs_type == RecsReview.RT_CLUSTER_BASED:
-                        cl = cntx["clusters"][i_obj["cl_id"]]
-                        obj.cluster_id = i_obj["cl_id"]
-                        obj.cluster_position = cl["pos"]
-                    obj.save()
+        if not error_messages:
+            if review_obj.is_cl_recs_review():
+                cluster_data = cntx["rec_iid_cluster"][main_item["id"]]
 
-                # save QA
-                qa_instance = qa_form.save()
+                # selected cluster item
+                cluster_item = _get_item_obj_from_items(request.POST.get("cluster_items"), cluster_data["items"])
+                if cluster_item is None:
+                    cluster_item = main_item
 
-                # update review
+                # cluster_qa
+                cluster_qa_instance = cluster_qa_form.save(commit=False)
+                cluster_qa_instance.item_id = cluster_item["id"]
+                cluster_qa_instance.position = cluster_item["pos"]
+                cluster_qa_instance.save()
+                review_obj.cluster_qa = cluster_qa_instance
+
+                # qa
+                qa_instance = qa_form.save(commit=False)
+                qa_instance.item_id = main_item["id"]
+                qa_instance.position = main_item["pos"]
+                qa_instance.cluster_id = cluster_data["id"]
+                qa_instance.cluster_position = cluster_data["pos"]
+                qa_instance.save()
                 review_obj.qa = qa_instance
-                review_obj.save()
+            else:
+                # qa
+                qa_instance = qa_form.save(commit=False)
+                qa_instance.item_id = main_item["id"]
+                qa_instance.position = main_item["pos"]
+                qa_instance.save()
+                review_obj.qa = qa_instance
 
-                cntx["info_message"] = "The review has been successfully submitted"
-        else:
-            error_messages.append("Please select at least one property")
+            # update review
+            review_obj.save()
+            cntx["info_message"] = "The review has been successfully submitted"
     else:
         qa_form = RecsReviewQAForm(instance=review_obj.qa)
         cluster_qa_form = ClusterRecsReviewQAForm(instance=review_obj.cluster_qa)
-        selected_iids = {obj.item_id for obj in review_obj.selected_item.all()}
 
-    for i_obj in cntx["items"]:
-        if i_obj["id"] in selected_iids:
-            i_obj["selected"] = True
+    if review_obj.qa:
+        cntx["selected_rec_iid"] = review_obj.qa.item_id
 
+    if review_obj.cluster_qa:
+        cntx["selected_cluster_iid"] = json.dumps({
+            review_obj.qa.cluster_id: review_obj.cluster_qa.item_id
+        })
+
+    cntx["rec_iid_cluster"] = json.dumps(cntx["rec_iid_cluster"])
     cntx["qa_form"] = qa_form
     cntx["cluster_qa_form"] = cluster_qa_form
     cntx["last5_items"] = get_items_booked_by_user(review_obj.hh_user.pk, TOP_ITEMS_PER_CLUSTER)
