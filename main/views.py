@@ -209,7 +209,9 @@ def recs_review_view(request, pk):
             review_obj.qa.cluster_id: review_obj.cluster_qa.item_id
         })
 
-    cntx["rec_iid_cluster"] = json.dumps(cntx["rec_iid_cluster"])
+    if review_obj.is_cl_recs_review():
+        cntx["rec_iid_cluster"] = json.dumps(cntx["rec_iid_cluster"])
+
     cntx["qa_form"] = qa_form
     cntx["cluster_qa_form"] = cluster_qa_form
     cntx["last5_items"] = get_items_booked_by_user(review_obj.hh_user.pk, TOP_ITEMS_PER_CLUSTER)
