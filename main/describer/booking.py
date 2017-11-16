@@ -1,3 +1,14 @@
+"""
+A pattern to create a booking cluster description
+
+The properties in this group are mostly from {region} region.
+The properties are usually booked during {breakpoint} breakpoints by {adults} with {children} and {babies}.
+These are {avg_spend_per_head} {detached} properties in the {complex} close to {close_to}.
+The group's properties are {no smoking}, {pets}, available for {shortbreakok}, and accessible to {accessebility}.
+The properties have {content} and contain {sleeps} sleeping places.
+The average rating of the properties is {stars} stars.
+"""
+
 from main.describer.common import avg_spend_per_head_features, stars_features, general_conditions_features, \
     accessibility_features, single_contents_features, plural_contents_features, concat_using_comma_and_and, \
     select_the_best, concat_using_comma
@@ -26,13 +37,13 @@ sleeps_features = {
 
 
 def first_sentence(regions):
-    sentence = "The group contains properties which are mostly from the %s" % concat_using_comma_and_and(regions)
+    sentence = "The properties in this group are mostly from the %s" % concat_using_comma_and_and(regions)
     sentence += " regions." if len(regions) > 1 else " region."
     return sentence
 
 
 def second_sentence(breakpoints, adults, children, is_babies):
-    sentence = "The groups's properties are usually booked"
+    sentence = "The properties are usually booked"
     if breakpoints:
         sentence += " during %s" % concat_using_comma_and_and(breakpoints)
         sentence += " breakpoints" if len(breakpoints) > 1 else " breakpoints"
@@ -77,7 +88,7 @@ def fourth_sentence(general_conditions, is_shortbreakok, accessibility):
 
 
 def fifth_sentence(contents, sleeps):
-    sentence = "The group's properties"
+    sentence = "The properties"
     if contents:
         sentence += " have %s" % concat_using_comma_and_and(contents)
     if sleeps:
@@ -92,13 +103,6 @@ def fifth_sentence(contents, sleeps):
 def sixth_sentence(stars):
     sentence = "The average rating of the properties is %s stars." % select_the_best(stars)
     return sentence
-
-# The group contains properties which are mostly from {region} region.
-# The group's properties are usually booked during {breakpoint} breakpoints by {adults} with {children} and {babies}.
-# These are {avg_spend_per_head} {detached} properties in the {complex} close to {close_to}.
-# The group's properties are {no smoking}, {pets}, available for {shortbreakok}, and accessible to {accessebility}.
-# The properties have {content} and contain {sleeps} sleeping places.
-# The average rating of the properties is {stars} stars.
 
 
 def describe_booking_cluster(booking_cluster_features):
