@@ -152,13 +152,13 @@ class ClusterRecsReviewQA(models.Model):
     usefulness_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
-        verbose_name="Looking at these additional properties is useful for choosing the most relevant property",
+        verbose_name="This information is useful for choosing the most relevant property",
         default=None
     )
     choice_qa = models.CharField(
         max_length=2,
         choices=LIKERT_SCALE,
-        verbose_name="Looking at these additional properties make easier to choose the most relevant property",
+        verbose_name="It is easier to select the most relevant property knowing this additional information",
         default=None
     )
 
