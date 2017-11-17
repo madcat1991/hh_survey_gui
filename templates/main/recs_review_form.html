@@ -42,7 +42,7 @@
         {% for item in last5_items %}
             <div class="item">
                 <img src="{{ item.image_url }}">
-                {% if item.obj.uri %}
+                {% if item.url %}
                     <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
                 {% else %}
                     {{ item.name }}
