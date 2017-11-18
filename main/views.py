@@ -38,8 +38,7 @@ class RecsReviewListView(LoginRequiredMixin, FilterView, SingleTableView):
                 When(qa__isnull=True, then=0),
                 default=1,
                 output_field=BooleanField()
-            ))\
-            .order_by('is_reviewed')
+            ))
 
 
 def get_items_booked_by_user(code, n_latest):
