@@ -8,7 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Max, Case, When, BooleanField
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 
@@ -148,6 +150,8 @@ def recs_review_view(request, pk):
 
     error_messages = []
     if request.method == 'POST':
+        back_url = request.POST.get('back_url', reverse('main:recsreviewlist'))
+
         qa_form = RecsReviewQAForm(request.POST, instance=review_obj.qa)
         if not qa_form.is_valid():
             error_messages.append("Failed to save the items QA form, please contact the administrator")
@@ -195,8 +199,11 @@ def recs_review_view(request, pk):
 
             review_obj.comment = request.POST.get("comment")
             review_obj.save()
-            cntx["info_message"] = "The review has been successfully submitted"
+
+            return HttpResponseRedirect(back_url)
     else:
+        back_url = request.META.get('HTTP_REFERER', reverse('main:recsreviewlist'))
+
         qa_form = RecsReviewQAForm(instance=review_obj.qa)
         cluster_qa_form = ClusterRecsReviewQAForm(instance=review_obj.cluster_qa)
 
@@ -211,6 +218,7 @@ def recs_review_view(request, pk):
     if review_obj.is_cl_recs_review():
         cntx["rec_iid_cluster"] = json.dumps(cntx["rec_iid_cluster"])
 
+    cntx["back_url"] = back_url
     cntx["qa_form"] = qa_form
     cntx["cluster_qa_form"] = cluster_qa_form
     cntx["last5_items"] = get_items_booked_by_user(review_obj.hh_user.pk, TOP_ITEMS_PER_CLUSTER)

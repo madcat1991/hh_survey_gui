@@ -24,10 +24,6 @@
 {% endblock %}
 
 {% block content %}
-    {% if info_message %}
-        <div class="message info_msg">{{ info_message }}</div>
-    {% endif %}
-
     {% for err_msg in error_messages %}
         <div class="message error_msg">{{ err_msg }}</div>
     {% endfor %}
@@ -251,6 +247,7 @@
             <div class="label">Do you have any additional comments you would like to share?</div>
             <textarea id="comment" name="comment" title="Reviewer comment">{% if review_obj.comment %}{{ review_obj.comment }}{% endif %}</textarea>
 
+            <input type="hidden" name="back_url" value="{{ back_url }}">
             <div id="submit_btn_container">
                 <input class="btn" type="submit" value="Finish and submit review"/>
             </div>
