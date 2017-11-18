@@ -229,3 +229,20 @@ def recs_review_view(request, pk):
     cntx["review_obj"] = review_obj
     cntx["error_messages"] = error_messages
     return render(request, "main/recs_review_form.html", context=cntx)
+
+
+@login_required
+def property_view(request, propcode):
+    data = settings.PROPERTY_DESCR.get(propcode, None)
+    cntx = {
+        "propcode": propcode,
+        "propname": data["name"],
+        "stars": data["stars"],
+        "address_info": data["address"],
+        "space_info": data["space"],
+        "nearby_info": ", ".join(data["nearby"]),
+        "features_info": data["features"],
+        "possession_info": ", ".join(data["possession"]),
+        "peculiarities": ", ".join(data["peculiarities"]),
+    }
+    return render(request, "main/property.html", context=cntx)

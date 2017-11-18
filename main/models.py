@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
-
+from django.urls import reverse
 
 LIKERT_SCALE = (
     ("sa", "Strongly agree"),
@@ -32,7 +32,9 @@ class Item(models.Model):
     name = models.CharField(max_length=200, null=True)
 
     def url(self):
-        return settings.HH_URL + self.uri if self.uri is not None else None
+        if self.uri:
+            return settings.HH_URL + self.uri
+        return reverse("main:propertyview", args=[self.code])
 
     def image_url(self):
         return settings.HH_IMAGE_URL + self.image_uri if self.image_uri is not None else settings.HH_DEFAULT_IMAGE_URL

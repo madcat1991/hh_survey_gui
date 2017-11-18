@@ -38,11 +38,7 @@
         {% for item in last5_items %}
             <div class="item">
                 <img src="{{ item.image_url }}">
-                {% if item.url %}
-                    <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
-                {% else %}
-                    {{ item.name }}
-                {% endif %}
+                <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
             </div>
         {% endfor %}
         </div>
@@ -68,12 +64,7 @@
                         <input type="radio" name="items" value="{{ item.id }}" {% if item.id == selected_rec_iid %}checked{% endif %}/>
                         <img src="{{ item.image_url }}">
                     </label>
-
-                    {% if item.url %}
-                        <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
-                    {% else %}
-                        {{ item.name }}
-                    {% endif %}
+                    <a href="{{ item.url }}" target="_blank">{{ item.name }}</a>
                 </div>
             {% endfor %}
             </div>
@@ -150,10 +141,7 @@
                         var cl_data = rec_iid_cluster[item_id];
 
                         cl_data["items"].forEach(function (item) {
-                            var name = item["name"];
-                            if (item["url"] !== null) {
-                                name = $('<a href="' + item["url"] + '" target="_blank">' + name + '</a>');
-                            }
+                            var name = $('<a href="' + item["url"] + '" target="_blank">' + item["name"] + '</a>');
 
                             var radio_input = $('<input type="radio" name="cluster_items" value="' + item["id"] + '"/>');
                             if (cl_data["id"] in selected_cluster_iid) {
