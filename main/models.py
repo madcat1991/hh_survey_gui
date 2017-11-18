@@ -88,6 +88,13 @@ class RecsReview(models.Model):
     qa = models.ForeignKey("main.RecsReviewQA", on_delete=models.SET_NULL, null=True, blank=True)
     cluster_qa = models.ForeignKey("main.ClusterRecsReviewQA", on_delete=models.SET_NULL, null=True, blank=True)
 
+    comment = models.TextField("Reviewer comment", blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.comment:
+            self.comment = None
+        super(RecsReview, self).save(*args, **kwargs)
+
     def is_cl_recs_review(self):
         return self.recs_type == self.RT_CLUSTER_BASED
 

@@ -7,7 +7,10 @@ class HHUserAdmin(admin.ModelAdmin):
 
 
 class RecsReviewAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'reviewer', 'hh_user', 'recs_type', 'qa', 'cluster_qa', 'dt')
+    list_display = (
+        'pk', 'reviewer', 'hh_user', 'recs_type', 'dt', 'qa',
+        'cluster_qa', 'comment',
+    )
 
 
 class RecsReviewQAAdmin(admin.ModelAdmin):

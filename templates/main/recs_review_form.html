@@ -248,6 +248,9 @@
             <br>
             {% endif %}
 
+            <div class="label">Do you have any additional comments you would like to share?</div>
+            <textarea id="comment" name="comment" title="Reviewer comment">{% if review_obj.comment %}{{ review_obj.comment }}{% endif %}</textarea>
+
             <div id="submit_btn_container">
                 <input class="btn" type="submit" value="Finish and submit review"/>
             </div>

@@ -1,4 +1,4 @@
-from django.forms import ModelForm, RadioSelect
+from django.forms import ModelForm, RadioSelect, Textarea
 
 from main.models import RecsReviewQA, ClusterRecsReviewQA
 

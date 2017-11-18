@@ -193,7 +193,7 @@ def recs_review_view(request, pk):
                 qa_instance.save()
                 review_obj.qa = qa_instance
 
-            # update review
+            review_obj.comment = request.POST.get("comment")
             review_obj.save()
             cntx["info_message"] = "The review has been successfully submitted"
     else:
