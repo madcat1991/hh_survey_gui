@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Property {{ propcode }}{% endblock %}
+
+{% block head %}
+    <style>
+        h3, h2 {
+            margin-bottom: 5px;
+        }
+
+        ul, p {
+            margin: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2>{{ propname }} ({{ propcode }})</h2>
+
+    {% if stars %}
+        <div>Rating: {{ stars }} stars</div>
+    {% endif %}
+
+    {% if address_info %}
+        <h3>Location:</h3>
+        <ul>
+        {% for field, val in address_info.items %}
+            <li>{{ field|capfirst }}: {{ val }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if space_info %}
+        <h3>Space:</h3>
+        <ul>
+        {% for field, val in space_info.items %}
+            <li>{{ field|capfirst }}: {{ val }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if nearby_info %}
+        <h3>Attractions nearby:</h3>
+        <p>{{ nearby_info|capfirst }}</p>
+    {% endif %}
+
+    {% if features_info %}
+        <h3>Features:</h3>
+        <ul>
+        {% for field, val in features_info.items %}
+            <li>{{ field|capfirst }}: {{ val }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if possession_info %}
+        <h3>The property have:</h3>
+        <p>{{ possession_info|capfirst }}</p>
+    {% endif %}
+
+    {% if peculiarities %}
+        <h3>Peculiarities:</h3>
+        <p>{{ peculiarities|capfirst }}</p>
+    {% endif %}
+{% endblock %}
