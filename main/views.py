@@ -156,14 +156,18 @@ def recs_review_view(request, pk):
         if not qa_form.is_valid():
             error_messages.append("Failed to save the items QA form, please contact the administrator")
 
-        cluster_qa_form = ClusterRecsReviewQAForm(request.POST, instance=review_obj.cluster_qa)
-        if review_obj.is_cl_recs_review() and not cluster_qa_form.is_valid():
-            error_messages.append("Failed to save the cluster QA form, please contact the administrator")
-
         # selected recommended item
         main_item = _get_item_obj_from_items(request.POST.get("items"), cntx["items"])
         if main_item is None:
-            error_messages.append("Please select a property")
+            error_messages.append(
+                "Please select the most relevant recommended property for the customer"
+            )
+
+        cluster_qa_form = ClusterRecsReviewQAForm(request.POST, instance=review_obj.cluster_qa)
+        if review_obj.is_cl_recs_review() and not cluster_qa_form.is_valid():
+            error_messages.append(
+                "Please fill the form related to the group of properties similar to the most relevant property"
+            )
 
         if not error_messages:
             if review_obj.is_cl_recs_review():

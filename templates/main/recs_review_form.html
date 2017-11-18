@@ -190,6 +190,7 @@
                         });
 
                         $('div.cluster_part').show();
+                        $('input[name="usefulness_qa"], input[name="choice_qa"]').prop("required", true);
                     });
 
                     // an item has been already selected
@@ -197,6 +198,9 @@
                     if (checked_item.length > 0){
                         checked_item.trigger('change');
                         $('div.cluster_part').show();
+                        $('input[name="usefulness_qa"], input[name="choice_qa"]').prop("required", true);
+                    } else {
+                        $('input[name="usefulness_qa"], input[name="choice_qa"]').prop("required", false);
                     }
                 });
             </script>
