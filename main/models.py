@@ -32,8 +32,6 @@ class Item(models.Model):
     name = models.CharField(max_length=200, null=True)
 
     def url(self):
-        if self.uri:
-            return settings.HH_URL + self.uri
         return reverse("main:propertyview", args=[self.code])
 
     def image_url(self):
